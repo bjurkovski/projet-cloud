@@ -1,4 +1,5 @@
 body {
+	background: url("/static/img/light.png");
 	background-color: #EEE;
 	color: #111;
 }

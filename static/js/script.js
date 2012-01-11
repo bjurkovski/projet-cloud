@@ -8,6 +8,7 @@ window.fbAsyncInit = function() {
 	});
 
 	document.getElementById("test").innerHTML = "will try to login...";
+	deezerSearch("eminem");
 	FB.getLoginStatus(function(response) {
 	if (response.status === 'connected') {
 		// the user is logged in and connected to your
@@ -37,3 +38,22 @@ window.fbAsyncInit = function() {
 	js.src = "//connect.facebook.net/en_US/all.js";
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
+
+function deezerSearch(query) {
+	document.getElementById("test").innerHTML = "Will search " + query + "...";
+	$.ajax({url: "http://api.deezer.com/2.0/search?q=" + query,
+		type: 'GET',
+		dataType: 'json',
+		success: function(json) {
+			var size = json.data.length;
+			if(size > 5) size = 5;
+			var tracks = "";
+
+			for(var i=0; i<size; i++) {
+				if(i>0) tracks += ", ";
+				tracks += json.data[i].title;
+			}
+			document.getElementById("test").innerHTML = "Searched '" + query + "' at Deezer. Results: " + tracks;
+		}
+	});
+};

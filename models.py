@@ -6,9 +6,13 @@ from google.appengine.ext import db
 # db.ReferenceProperty(_otherType_)
 # db.IntegerProperty()
 
-class Artist(db.Model):
-	name = db.StringProperty()
-
-class Person(db.Model):
+class User(db.Model):
 	name = db.StringProperty()
 	preferedArtists = db.ListProperty(db.Key)
+
+class Artist(db.Model):
+	name = db.StringProperty()
+	songs = db.ListProperty(db.Key)
+
+class Song(db.Model):
+	name = db.StringProperty()
