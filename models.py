@@ -11,8 +11,10 @@ class User(db.Model):
 	preferedArtists = db.ListProperty(db.Key)
 
 class Artist(db.Model):
+	deezerId = db.IntegerProperty()
 	name = db.StringProperty()
 	songs = db.ListProperty(db.Key)
 
 class Song(db.Model):
+	deezerId = db.IntegerProperty()
 	name = db.StringProperty()
