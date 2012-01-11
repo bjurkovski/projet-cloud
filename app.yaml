@@ -8,9 +8,9 @@ handlers:
 - url: /static
   static_dir: static
 
-- url: /channel\.html
-  static_files: static/channel\.html
-  upload: static/channel\.html
+- url: /(.*\.(html))
+  static_files: static/\1
+  upload: static/(.*\.(html))
 
 - url: /.*
   script: projet-cloud.app

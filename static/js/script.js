@@ -1,32 +1,32 @@
 window.fbAsyncInit = function() {
 	FB.init({
 		appId      : '173535979414436', // App ID
-		channelUrl : '/channel.html', // Channel File
+//		channelUrl : '/channel.html', // Channel File
 		status     : true, // check login status
 		cookie     : true, // enable cookies to allow the server to access the session
 		xfbml      : true  // parse XFBML
 	});
 
 	document.getElementById("test").innerHTML = "will try to login...";
-	deezerSearch("eminem");
+	//deezerSearchArtist("oasis");
 	FB.getLoginStatus(function(response) {
-	if (response.status === 'connected') {
-		// the user is logged in and connected to your
-		// app, and response.authResponse supplies
-		// the user's ID, a valid access token, a signed
-		// request, and the time the access token 
-		// and signed request each expire
-		var uid = response.authResponse.userID;
-		var accessToken = response.authResponse.accessToken;
-		document.getElementById("test").innerHTML = "conectado!";
-	} else if (response.status === 'not_authorized') {
-		// the user is logged in to Facebook, 
-		//but not connected to the app
-		document.getElementById("test").innerHTML = "nao autorizado!";
-	} else {
-		// the user isn't even logged in to Facebook.
-		document.getElementById("test").innerHTML = "nao logado!";
-	}
+		if (response.status === 'connected') {
+			// the user is logged in and connected to your
+			// app, and response.authResponse supplies
+			// the user's ID, a valid access token, a signed
+			// request, and the time the access token 
+			// and signed request each expire
+			var uid = response.authResponse.userID;
+			var accessToken = response.authResponse.accessToken;
+			document.getElementById("test").innerHTML = "conectado!";
+		} else if (response.status === 'not_authorized') {
+			// the user is logged in to Facebook, 
+			//but not connected to the app
+			document.getElementById("test").innerHTML = "nao autorizado!";
+		} else {
+			// the user isn't even logged in to Facebook.
+			document.getElementById("test").innerHTML = "nao logado!";
+		}
 	});
 	// Additional initialization code here
 };
@@ -39,9 +39,25 @@ window.fbAsyncInit = function() {
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
 
+
+var DEEZER_API_URL = "http://api.deezer.com/";
+var DEEZER_API_VERSION = "2.0";
+
+function deezerSearchArtist(artistName) {
+	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search/artist?q=" + artistName,
+		type: 'GET',
+		dataType: 'json',
+		success: function(json) {
+			if(json.data.length > 0) {
+				document.getElementById("test").innerHTML = "Artist: " + json.data[0].name;
+			}
+		}
+	});
+}
+
 function deezerSearch(query) {
 	document.getElementById("test").innerHTML = "Will search " + query + "...";
-	$.ajax({url: "http://api.deezer.com/2.0/search?q=" + query,
+	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search?q=" + query,
 		type: 'GET',
 		dataType: 'json',
 		success: function(json) {
