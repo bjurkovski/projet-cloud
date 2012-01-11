@@ -1,11 +1,6 @@
-<html>
-	<head>
-		<link type="text/css" rel="stylesheet" href="/static/css/style.css"/>
-	</head>
-	<body>
-		<b>Index:</b> {{param}}
-		<div id="test"></div>
+{% extends "pages/template.html" %}
 
-		<script src="/static/js/script.js"/>
-	</body>
-</html>
+{% block content %}
+	<b>Index:</b> {{param}}
+	<div id="test"></div>
+{% endblock %}
