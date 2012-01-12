@@ -6,9 +6,11 @@ window.fbAsyncInit = function() {
 		xfbml      : true,  // parse XFBML
 		oauth	   : true
 	});
+
+	dbTest();
 	document.getElementById("test").innerHTML = "will try to login...";
-	deezerSearch("eminem");
 	searchFriendsMusics();
+	//deezerSearch("eminem");
 
 	// Additional initialization code here
 };
@@ -20,6 +22,43 @@ window.fbAsyncInit = function() {
 	js.src = "//connect.facebook.net/en_US/all.js";
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
+
+var DEEZER_API_URL = "http://api.deezer.com/";
+var DEEZER_API_VERSION = "2.0";
+
+function dbTest() {
+	var artistJson = new Object;
+	artistJson.data = new Array;
+
+	var artist = new Object;
+	artist.id = "456";
+	artist.name = "Outro nome :D";
+	artistJson.data.push(artist);
+
+	var JSONstring = $.toJSON(artistJson);
+
+	$.ajax({url: "/artist",
+		type: 'POST',
+		data: "json=" + JSONstring,
+		dataType: 'json',
+		success: function(json) {
+			if(json.status == "ERROR")
+				alert("Error creating a new artist...");
+		}
+	});
+}
+
+function deezerSearchArtist(artistName) {
+	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search/artist?q=" + artistName,
+		type: 'GET',
+		dataType: 'json',
+		success: function(json) {
+			if(json.data.length > 0) {
+				document.getElementById("test").innerHTML = "Artist: " + json.data[0].name;
+			}
+		}
+	});
+}
 
 function deezerSearch(query) {
 	document.getElementById("test").innerHTML = "Will search " + query + "...";
