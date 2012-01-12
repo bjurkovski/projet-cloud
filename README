@@ -1,9 +1,12 @@
 1. Download the AppEngine SDK
 http://code.google.com/appengine/downloads.html
 
-2. To test in development mode, execute the downloaded script:
-python dev_appserver.py APP
+2. Download jinja2, if you haven't yet:
+sudo apt-get install python-jinja2
+
+3. To test in development mode, execute the downloaded script:
+python dev_appserver.py APP(path of the project)
 (APP is the directory in which the application source is located)
 
-3. Open the browser
+4. Open the browser
 http://localhost:8080
