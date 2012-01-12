@@ -8,7 +8,7 @@ window.fbAsyncInit = function() {
 	});
 	document.getElementById("test").innerHTML = "will try to login...";
 	deezerSearch("eminem");
-	searchFriends();
+	searchFriendsMusics();
 
 	// Additional initialization code here
 };
@@ -41,7 +41,7 @@ function deezerSearch(query) {
 };
 
 
-function searchFriends() { 
+function searchFriendsMusics() { 
 
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
@@ -53,16 +53,26 @@ function searchFriends() {
 		// and signed request each expire
 		var uid = response.authResponse.userID;
 		var accessToken = response.authResponse.accessToken;
-		FB.api('/me', function(response) {
 		var query = FB.Data.query('select name, uid from user where uid={0}',
 		                       uid);
-		if (!response || response.error) {
-    		alert('Error occured: ' + response.error);
-		}
 	 	query.wait(function(rows) {
-		alert('Your name is ' + rows[0].name);
+		console.log('Your name is ' + rows[0].name);
 	 	});
-	});
+
+		document.getElementById('face').innerHTML = "Requesting "
+		  + "data from Facebook ... ";
+		FB.api('me/friends', function(response) {
+		    for( i=0; i<response.data.length; i++) {
+		      friendId = response.data[i].id;
+		      FB.api('/'+friendId+'/music', function(response) {
+				for( j=0; j<response.data.length; j++) {
+					if(response.data[j].category == "Musician/band") {
+						document.getElementById('face').innerHTML += "<br>"+response.data[j].name;
+					}
+				}
+		      });
+		    } 
+		});
 	  } else if (response.status === 'not_authorized') {
 		alert("nao autorizado");
 		// the user is logged in to Facebook, 
@@ -72,18 +82,6 @@ function searchFriends() {
 		// the user isn't even logged in to Facebook.
 	  }
 	 });
-
-	/*var musicList = new Array();
-    document.getElementById('testFace').innerHTML = "Requesting "
-      + "data from Facebook ... ";
-    FB.api('me/friends', function(response) {
-        for( i=0; i<response.data.length; i++) {
-          friendId = response.data[i].id;
-          FB.api('/'+friendId+'/music', function(response) {
-            musicList = musicList.concat(response.data);
-          });
-        } 
-    });*/
  }
 
 
