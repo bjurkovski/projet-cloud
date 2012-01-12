@@ -79,12 +79,25 @@ function deezerSearch(query) {
 	});
 };
 
+function writeObj(obj, message) {
+  if (!message) { message = obj; }
+  var details = "*****************" + "\n" + message + "\n";
+  var fieldContents;
+  for (var field in obj) {
+    fieldContents = obj[field];
+    if (typeof(fieldContents) == "function") {
+      fieldContents = "(function)";
+    }
+    details += "  " + field + ": " + fieldContents + "\n";
+  }
+  console.log(details);
+}
 
-function searchFriendsMusics() { 
 
+function searchFriendsMusics() {
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
-		alert("Conectado");
+		document.getElementById('face').innerHTML += "Connected! ";
 		// the user is logged in and connected to your
 		// app, and response.authResponse supplies
 		// the user's ID, a valid access token, a signed
@@ -92,32 +105,53 @@ function searchFriendsMusics() {
 		// and signed request each expire
 		var uid = response.authResponse.userID;
 		var accessToken = response.authResponse.accessToken;
-		var query = FB.Data.query('select name, uid from user where uid={0}',
-		                       uid);
+		var query = FB.Data.query('select name, uid from user where uid={0}', uid);
 	 	query.wait(function(rows) {
-		console.log('Your name is ' + rows[0].name);
+			console.log('Your name is ' + rows[0].name);
 	 	});
 
-		document.getElementById('face').innerHTML = "Requesting "
-		  + "data from Facebook ... ";
-		FB.api('me/friends', function(response) {
-		    for( i=0; i<response.data.length; i++) {
-		      friendId = response.data[i].id;
-		      FB.api('/'+friendId+'/music', function(response) {
-				for( j=0; j<response.data.length; j++) {
-					if(response.data[j].category == "Musician/band") {
-						document.getElementById('face').innerHTML += "<br>"+response.data[j].name;
+		document.getElementById('face').innerHTML += "Requesting data from Facebook ... ";
+
+		var friends = FB.Data.query("SELECT uid2 FROM friend WHERE uid1={0}", uid);
+		var friendsMusic = FB.Data.query("SELECT music FROM user WHERE uid IN (select uid2 from {0})", friends);
+
+		FB.Data.waitOn([friends, friendsMusic], function() {
+			var count = 0;
+			var artists = [];
+			FB.Array.forEach(friendsMusic.value, function(row) {
+				var musics = row.music.split(",")
+				for(var j=0; j<musics.length; j++) {
+					var aName = musics[j];
+					var found = false;
+					for(var k=0; k<artists.length; k++) {
+						if(artists[k][0] == aName) {
+							artists[k][1]++;
+							found = true;
+						}
 					}
+					if(!found) artists.push([aName, 1]);
 				}
-		      });
-		    } 
+				count++;
+		   });
+
+			artists.sort(function(a, b) {
+				a = a[1];
+				b = b[1];
+				return a > b ? -1 : (a < b ? 1 : 0);
+			});
+
+			var size = artists.length;
+			if(size > 5) size = 5;
+
+			for(var i=0; i<size; i++)
+				document.getElementById('face').innerHTML += "<br>" + artists[i][0] + ": " + artists[i][1] + " friends";
 		});
 	  } else if (response.status === 'not_authorized') {
-		alert("nao autorizado");
+		//alert("nao autorizado");
 		// the user is logged in to Facebook, 
 		//but not connected to the app
 	  } else {
-		alert("nao logado");
+		//alert("nao logado");
 		// the user isn't even logged in to Facebook.
 	  }
 	 });
