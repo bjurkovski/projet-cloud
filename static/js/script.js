@@ -1,33 +1,15 @@
 window.fbAsyncInit = function() {
 	FB.init({
 		appId      : '173535979414436', // App ID
-//		channelUrl : '/channel.html', // Channel File
 		status     : true, // check login status
 		cookie     : true, // enable cookies to allow the server to access the session
-		xfbml      : true  // parse XFBML
+		xfbml      : true,  // parse XFBML
+		oauth	   : true
 	});
-
 	document.getElementById("test").innerHTML = "will try to login...";
-	//deezerSearchArtist("oasis");
-	FB.getLoginStatus(function(response) {
-		if (response.status === 'connected') {
-			// the user is logged in and connected to your
-			// app, and response.authResponse supplies
-			// the user's ID, a valid access token, a signed
-			// request, and the time the access token 
-			// and signed request each expire
-			var uid = response.authResponse.userID;
-			var accessToken = response.authResponse.accessToken;
-			document.getElementById("test").innerHTML = "conectado!";
-		} else if (response.status === 'not_authorized') {
-			// the user is logged in to Facebook, 
-			//but not connected to the app
-			document.getElementById("test").innerHTML = "nao autorizado!";
-		} else {
-			// the user isn't even logged in to Facebook.
-			document.getElementById("test").innerHTML = "nao logado!";
-		}
-	});
+	deezerSearch("eminem");
+	searchFriends();
+
 	// Additional initialization code here
 };
 
@@ -39,25 +21,9 @@ window.fbAsyncInit = function() {
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
 
-
-var DEEZER_API_URL = "http://api.deezer.com/";
-var DEEZER_API_VERSION = "2.0";
-
-function deezerSearchArtist(artistName) {
-	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search/artist?q=" + artistName,
-		type: 'GET',
-		dataType: 'json',
-		success: function(json) {
-			if(json.data.length > 0) {
-				document.getElementById("test").innerHTML = "Artist: " + json.data[0].name;
-			}
-		}
-	});
-}
-
 function deezerSearch(query) {
 	document.getElementById("test").innerHTML = "Will search " + query + "...";
-	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search?q=" + query,
+	$.ajax({url: "http://api.deezer.com/2.0/search?q=" + query,
 		type: 'GET',
 		dataType: 'json',
 		success: function(json) {
@@ -73,3 +39,51 @@ function deezerSearch(query) {
 		}
 	});
 };
+
+
+function searchFriends() { 
+
+	FB.getLoginStatus(function(response) {
+	  if (response.status === 'connected') {
+		alert("Conectado");
+		// the user is logged in and connected to your
+		// app, and response.authResponse supplies
+		// the user's ID, a valid access token, a signed
+		// request, and the time the access token 
+		// and signed request each expire
+		var uid = response.authResponse.userID;
+		var accessToken = response.authResponse.accessToken;
+		FB.api('/me', function(response) {
+		var query = FB.Data.query('select name, uid from user where uid={0}',
+		                       uid);
+		if (!response || response.error) {
+    		alert('Error occured: ' + response.error);
+		}
+	 	query.wait(function(rows) {
+		alert('Your name is ' + rows[0].name);
+	 	});
+	});
+	  } else if (response.status === 'not_authorized') {
+		alert("nao autorizado");
+		// the user is logged in to Facebook, 
+		//but not connected to the app
+	  } else {
+		alert("nao logado");
+		// the user isn't even logged in to Facebook.
+	  }
+	 });
+
+	/*var musicList = new Array();
+    document.getElementById('testFace').innerHTML = "Requesting "
+      + "data from Facebook ... ";
+    FB.api('me/friends', function(response) {
+        for( i=0; i<response.data.length; i++) {
+          friendId = response.data[i].id;
+          FB.api('/'+friendId+'/music', function(response) {
+            musicList = musicList.concat(response.data);
+          });
+        } 
+    });*/
+ }
+
+
