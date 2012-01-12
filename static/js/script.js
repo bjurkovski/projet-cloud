@@ -7,6 +7,7 @@ window.fbAsyncInit = function() {
 		xfbml      : true  // parse XFBML
 	});
 
+	dbTest();
 	document.getElementById("test").innerHTML = "will try to login...";
 	//deezerSearchArtist("oasis");
 	FB.getLoginStatus(function(response) {
@@ -42,6 +43,28 @@ window.fbAsyncInit = function() {
 
 var DEEZER_API_URL = "http://api.deezer.com/";
 var DEEZER_API_VERSION = "2.0";
+
+function dbTest() {
+	var artistJson = new Object;
+	artistJson.data = new Array;
+
+	var artist = new Object;
+	artist.id = "456";
+	artist.name = "Outro nome :D";
+	artistJson.data.push(artist);
+
+	var JSONstring = $.toJSON(artistJson);
+
+	$.ajax({url: "/artist",
+		type: 'POST',
+		data: "json=" + JSONstring,
+		dataType: 'json',
+		success: function(json) {
+			if(json.status == "ERROR")
+				alert("Error creating a new artist...");
+		}
+	});
+}
 
 function deezerSearchArtist(artistName) {
 	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search/artist?q=" + artistName,
