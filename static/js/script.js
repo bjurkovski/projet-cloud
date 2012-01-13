@@ -143,8 +143,15 @@ function searchFriendsMusics() {
 			var size = artists.length;
 			if(size > 5) size = 5;
 
+			var results = "";
+
+			results += "<ul>";
+			results += "<li class='title'>Friends top artists:</li>";
 			for(var i=0; i<size; i++)
-				document.getElementById('face').innerHTML += "<br>" + artists[i][0] + ": " + artists[i][1] + " friends";
+				results += "<li>" + artists[i][0] + ": " + artists[i][1] + " friends</li>";
+			results += "</ul>";
+
+			document.getElementById('face').innerHTML += results;
 		});
 	  } else if (response.status === 'not_authorized') {
 		//alert("nao autorizado");

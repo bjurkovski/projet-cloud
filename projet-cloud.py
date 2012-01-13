@@ -54,7 +54,6 @@ class BaseHandler(webapp2.RequestHandler):
 class MainPage(BaseHandler):
 	def get(self):
 		template_values = {
-			'param': 'This is a parameter to the page renderer!',
 			'user': self.current_user
 		}
 		template = jinja.get_template(PAGES_FOLDER + 'index.html')
@@ -87,7 +86,6 @@ class ArtistHandler(ApiRequestHandler):
 		return self.returnJson(jsonData)
 
 	def post(self, param):
-		param = urllib.unquote(urllib.unquote(param))
 		retData = {}
 		try:
 			jsonStr = self.request.get("json")

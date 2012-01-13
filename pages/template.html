@@ -8,8 +8,13 @@
 		<title>Projet Cloud</title>
 	</head>
 	<body>
-		{% block content %}
-		{% endblock %}
+		<div id="topmenu">
+			<fb:login-button autologoutlink="true" scope="user_likes, friends_likes"></fb:login-button>
+		</div>
+
+		<div id="content">
+			{% block content %}{% endblock %}
+		</div>
 
 		<div id="fb-root"></div>
 

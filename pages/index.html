@@ -1,10 +1,9 @@
 {% extends "pages/template.html" %}
 
 {% block content %}
-	<b>Index:</b> {{param}}
-	<b>Facebook User (from the server point of view):</b> {{user}}
-	<div id="test"></div>
-	<div id="face"></div>
-	<fb:login-button autologoutlink="true" scope="user_likes, friends_likes">
-	</fb:login-button>
+	{% if user %}
+		Hello <b>{{user}}</b>!
+		<div id="test"></div>
+		<div id="face"></div>
+	{% endif %}
 {% endblock %}
