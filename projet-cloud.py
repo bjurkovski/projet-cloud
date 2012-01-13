@@ -9,34 +9,58 @@ from models import *
 from managers import *
 
 PAGES_FOLDER = "pages/"
-FB_API_KEY = ''
-FB_SECRET_KEY = ''
+FB_APP_ID = '173535979414436'
+FB_APP_SECRET = '7eef3a773b0a2da0eaedd3949d01ce89'
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-facebookApi = facebook.Facebook(FB_API_KEY, FB_SECRET_KEY)
+#facebookApi = facebook.Facebook(FB_API_KEY, FB_SECRET_KEY)
 
-class MainPage(webapp2.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
+	"""Provides access to the active Facebook user in self.current_user
+
+	The property is lazy-loaded on first access, using the cookie saved
+	by the Facebook JavaScript SDK to determine the user ID of the active
+	user. See http://developers.facebook.com/docs/authentication/ for
+	more information.
+	"""
+	@property
+	def current_user(self):
+		if not hasattr(self, "_current_user"):
+			self._current_user = None
+			cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
+			if cookie:
+				# Store a local instance of the user data so we don't need
+				# a round-trip to Facebook on every request
+				user = User.get_by_key_name(cookie["uid"])
+				if not user:
+					#graph = facebook.GraphAPI(cookie["access_token"])
+					#profile = graph.get_object("me")
+					#user = User(key_name=str(profile["id"]),
+					#			id=str(profile["id"]),
+					#			name=profile["name"],
+					#			profile_url=profile["link"],
+					#			access_token=cookie["access_token"])
+					user = User(key_name=str(cookie["uid"]),
+								id=str(cookie["uid"]),
+								name="unknown",
+								profile_url="unknown",
+								access_token=cookie["access_token"])
+					user.put()
+				elif user.access_token != cookie["access_token"]:
+					user.access_token = cookie["access_token"]
+					user.put()
+				self._current_user = user
+		return self._current_user
+
+class MainPage(BaseHandler):
 	def get(self):
-		# json.dumps(data)
-		# json.loads(self.request.get("json"))
-
-		user = None
-		if not facebookApi.check_connect_session(self.request):
-			user = None
-
-		try:
-			users = facebookApi.users.getInfo([facebookApi.uid], ['uid', 'name'])
-			user = users[0]
-		except:
-			pass
-
 		template_values = {
 			'param': 'This is a parameter to the page renderer!',
-			'user': user
+			'user': self.current_user
 		}
 		template = jinja.get_template(PAGES_FOLDER + 'index.html')
 		self.response.out.write(template.render(template_values))
 
-class ApiRequestHandler(webapp2.RequestHandler):
+class ApiRequestHandler(BaseHandler):
 	def __init__(self, request, response, manager):
 		webapp2.RequestHandler.__init__(self, request, response)
 		self.manager = manager

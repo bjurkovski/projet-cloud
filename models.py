@@ -7,8 +7,12 @@ from google.appengine.ext import db
 # db.IntegerProperty()
 
 class User(db.Model):
-	facebookId = db.StringProperty()
-	name = db.StringProperty()
+	id = db.StringProperty(required=True)
+	name = db.StringProperty(required=True)
+	created = db.DateTimeProperty(auto_now_add=True)
+	updated = db.DateTimeProperty(auto_now=True)
+	profile_url = db.StringProperty(required=True)
+	access_token = db.StringProperty(required=True)
 	preferedArtists = db.ListProperty(db.Key)
 
 	def create(self, uid, name):
@@ -19,6 +23,9 @@ class User(db.Model):
 		self.preferedArtists.append(artist)
 		artist.likedBy.append(self)
 		artist.put()
+
+	def __str__(self):
+		return self.name
 
 class Artist(db.Model):
 	deezerId = db.StringProperty()
