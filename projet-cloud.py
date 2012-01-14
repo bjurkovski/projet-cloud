@@ -134,16 +134,16 @@ class TopArtistsHandler(ApiRequestHandler):
 			for friend in user.friends:
 				for artist in friend.preferedArtists:
 					try:
-						allArtists[artist.deezerId] += 1
+						allArtists[artist] += 1
 					except KeyError:
-						allArtists[artist.deezerId] = 0
+						allArtists[artist] = 0
 
 			artistValues = allArtists.items()
 			artistValues.sort()
 			topArtists = {}
-			for key, value in artistValues:
-				topArtists['name']= key
-				topArtists['value'] = value
+			for key, value in artistValues[:5]:
+				topArtists['artist']= key
+				topArtists['friends'] = value
 
 			jsonData = {"status": "OK", "data": topArtists}
 			return self.returnJson(jsonData)
