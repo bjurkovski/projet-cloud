@@ -128,7 +128,7 @@ class TopArtistsHandler(ApiRequestHandler):
 		ApiRequestHandler.__init__(self, request, response, None)
 
 	def get(self):
-		user = User.get_by_key_name(cookie["uid"])
+		user = self.current_user
 		if user:
 			allArtists = {}
 			for friend in user.friends:
