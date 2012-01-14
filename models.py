@@ -14,6 +14,7 @@ class User(db.Model):
 	profile_url = db.StringProperty(required=True)
 	access_token = db.StringProperty(required=True)
 	preferedArtists = db.ListProperty(db.Key)
+	friends = db.ListProperty(db.Key)
 
 	def create(self, uid, name):
 		self.facebookId = uid
@@ -23,6 +24,11 @@ class User(db.Model):
 		self.preferedArtists.append(artist)
 		artist.likedBy.append(self)
 		artist.put()
+
+	def addFriend(self, friend): 
+		self.friends.append(friend)
+		friend.friends.append(self)
+		friend.put()
 
 	def __str__(self):
 		return self.name

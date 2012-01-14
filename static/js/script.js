@@ -7,10 +7,9 @@ window.fbAsyncInit = function() {
 		oauth	   : true
 	});
 
-	dbTest();
 	document.getElementById("test").innerHTML = "will try to login...";
 	searchFriendsMusics();
-	//deezerSearch("eminem");
+	deezerSearch("eminem");
 
 	// Additional initialization code here
 };
@@ -26,58 +25,47 @@ window.fbAsyncInit = function() {
 var DEEZER_API_URL = "http://api.deezer.com/";
 var DEEZER_API_VERSION = "2.0";
 
-function dbTest() {
-	var artistJson = new Object;
-	artistJson.data = new Array;
-
-	var artist = new Object;
-	artist.id = "456";
-	artist.name = "Outro nome :D";
-	artistJson.data.push(artist);
-
-	var JSONstring = $.toJSON(artistJson);
-
-	$.ajax({url: "/artist",
-		type: 'POST',
-		data: "json=" + JSONstring,
-		dataType: 'json',
-		success: function(json) {
-			if(json.status == "ERROR")
-				alert("Error creating a new artist...");
-		}
-	});
-}
-
-function deezerSearchArtist(artistName) {
-	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search/artist?q=" + artistName,
-		type: 'GET',
-		dataType: 'json',
-		success: function(json) {
-			if(json.data.length > 0) {
-				document.getElementById("test").innerHTML = "Artist: " + json.data[0].name;
-			}
-		}
-	});
-}
-
 function deezerSearch(query) {
-	document.getElementById("test").innerHTML = "Will search " + query + "...";
-	$.ajax({url: "http://api.deezer.com/2.0/search?q=" + query,
+	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search?q=" + query,
 		type: 'GET',
 		dataType: 'json',
-		success: function(json) {
-			var size = json.data.length;
-			if(size > 5) size = 5;
-			var tracks = "";
-
-			for(var i=0; i<size; i++) {
-				if(i>0) tracks += ", ";
-				tracks += json.data[i].title;
-			}
-			document.getElementById("test").innerHTML = "Searched '" + query + "' at Deezer. Results: " + tracks;
+		success: function(songsJson) {			
+			$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search/artist?q=" + query,
+				type: 'GET',
+				dataType: 'json',
+				success: function(artistsJson) {
+					if(artistsJson.data.length > 0) {
+						var json = new Object;
+						json.data = new Array;
+						json.data[0].artist = new Object;
+						json.data[0].artist.id = artistsJson.data[0].id;
+						json.data[0].artist.name = artistsJson.data[0].name;
+						for(var i=0; i< songsJson.data.length; i++){
+							if(songsJson.data[i].artist.id == artistsJson.data[0].id) {				 
+								json.data[0].artist.tracks[i] = new Object;
+								json.data[0].artist.tracks[i].id = songsJson.data[i].id; 
+								json.data[0].artist.tracks[i].name = songsJson.data[i].title;
+							}
+						}
+						sendArtist($.toJSON(json));
+					}
+				}
+			});
 		}
 	});
 };
+
+function sendArtist(json) {
+	$.ajax({url: "/artist",
+				type: 'POST',
+				data: "json=" + json,
+				dataType: 'json',
+				success: function(jsonAnswer) {
+					if(jsonAnswer.status == "ERROR")
+						alert("Error creating a new artist...");
+				}
+	});
+}
 
 function writeObj(obj, message) {
   if (!message) { message = obj; }
