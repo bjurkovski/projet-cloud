@@ -7,13 +7,13 @@ from google.appengine.ext import db
 # db.IntegerProperty()
 
 class User(db.Model):
-	id = db.StringProperty(required=True)
+	facebookId = db.StringProperty(required=True)
 	name = db.StringProperty(required=True)
 	created = db.DateTimeProperty(auto_now_add=True)
 	updated = db.DateTimeProperty(auto_now=True)
-	profile_url = db.StringProperty(required=True)
-	access_token = db.StringProperty(required=True)
-	preferedArtists = db.ListProperty(db.Key)
+	profile_url = db.StringProperty()
+	access_token = db.StringProperty()
+	prefered_artists = db.ListProperty(db.Key)
 	friends = db.ListProperty(db.Key)
 
 	def create(self, uid, name):

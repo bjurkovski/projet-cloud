@@ -1,5 +1,35 @@
 from models import *
 
+class UserManager:
+	def addUsers(self, data):
+
+		users[]			
+		for a in data:
+			user = User.all().filter("facebookId = ", a['id']).get()
+			if not user:
+				user = User()
+			user.create(a['id'], a['name'])
+			user.profile_url = a['profile_url']
+			user.access_token = a['access_token']
+			for b in a['preferred_artists']:
+				user.preferred_artists.append(b)
+			users.append(user)
+			user.put()
+			
+			for b in a['friends']:
+				friend = User.all().filter("facebookId = ", b['id']).get()
+				if not friend:
+					friend = User()
+				friend.create(b['id'], b['name'])
+				user.profile_url = a['profile_url']
+				user.access_token = a['access_token']
+				for b in a['preferred_artists']:
+					user.preferred_artists.append(b)
+				friend.addFriend(user)
+				friend.put()
+				
+		return users
+
 class ArtistManager:
 	def getArtists(self, ids=None):
 		data = []

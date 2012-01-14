@@ -70,20 +70,17 @@ function sendArtist(json) {
 	});
 }
 
-function writeObj(obj, message) {
-  if (!message) { message = obj; }
-  var details = "*****************" + "\n" + message + "\n";
-  var fieldContents;
-  for (var field in obj) {
-    fieldContents = obj[field];
-    if (typeof(fieldContents) == "function") {
-      fieldContents = "(function)";
-    }
-    details += "  " + field + ": " + fieldContents + "\n";
-  }
-  console.log(details);
+function sendUser(json) {
+	$.ajax({url: "/user",
+				type: 'POST',
+				data: "json=" + json,
+				dataType: 'json',
+				success: function(jsonAnswer) {
+					if(jsonAnswer.status == "ERROR")
+						alert("Error creating (or updating) the user...");
+				}
+	});
 }
-
 
 function searchFriendsMusics() {
 	FB.getLoginStatus(function(response) {
@@ -110,7 +107,6 @@ function searchFriendsMusics() {
 			var artists = [];
 			FB.Array.forEach(friendsMusic.value, function(row) {
 				if(row.music != "") {
-					//document.getElementById('test').innerHTML += "<br>*" + row.music + "*";
 					var musics = row.music.split(",")
 					for(var j=0; j<musics.length; j++) {
 						var aName = musics[j];
@@ -135,6 +131,7 @@ function searchFriendsMusics() {
 			var size = artists.length;
 			if(size > 5) size = 5;
 
+			
 			var results = "";
 
 			results += "<ul>";
