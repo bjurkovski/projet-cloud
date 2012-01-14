@@ -9,8 +9,6 @@ window.fbAsyncInit = function() {
 
 	document.getElementById("test").innerHTML = "will try to login...";
 	searchFriendsMusics();
-	testUser();
-	//deezerSearch("eminem");
 
 	// Additional initialization code here
 };
@@ -26,7 +24,7 @@ window.fbAsyncInit = function() {
 var DEEZER_API_URL = "http://api.deezer.com/";
 var DEEZER_API_VERSION = "2.0";
 
-function deezerSearch(query) {
+function searchAddArtist(query) {
 	$.ajax({url: DEEZER_API_URL + DEEZER_API_VERSION + "/search?q=" + query,
 		type: 'GET',
 		dataType: 'json',
@@ -71,33 +69,6 @@ function sendArtist(json) {
 	});
 }
 
-function testUser() {
-/*
-	facebookId = db.StringProperty(required=True)
-	name = db.StringProperty(required=True)
-	created = db.DateTimeProperty(auto_now_add=True)
-	updated = db.DateTimeProperty(auto_now=True)
-	profile_url = db.StringProperty()
-	access_token = db.StringProperty()
-	prefered_artists = db.ListProperty(db.Key)
-	friends = db.ListProperty(db.Key)
-*/
-
-
-
-	var json = new Object;
-	json.data = new Array;
-	var user = new Object;
-	user.id = "123";
-	user.name = "lalala";
-	user.profile_url = "";
-	user.access_token = "";
-	user.prefered_artists = [];
-	user.friends = [];
-	json.data.push(user);
-	sendUser($.toJSON(json));
-}
-
 function sendUser(json) {
 	$.ajax({url: "/user",
 				type: 'POST',
@@ -105,7 +76,7 @@ function sendUser(json) {
 				dataType: 'json',
 				success: function(jsonAnswer) {
 					if(jsonAnswer.status == "ERROR")
-						alert("Error creating (or updating) the user...");
+						alert("Error creating (or updating) a user...");
 				}
 	});
 }
@@ -121,17 +92,14 @@ function searchFriendsMusics() {
 		// and signed request each expire
 		var uid = response.authResponse.userID;
 		var accessToken = response.authResponse.accessToken;
-		var query = FB.Data.query('select name, uid from user where uid={0}', uid);
-	 	query.wait(function(rows) {
-			console.log('Your name is ' + rows[0].name);
-	 	});
-
+		var myself = FB.Data.query('select name, uid from user where uid={0}', uid);
+	 	
 		document.getElementById('face').innerHTML += "Requesting data from Facebook ... ";
 
 		var friends = FB.Data.query("SELECT uid2 FROM friend WHERE uid1={0}", uid);
 		var friendsMusic = FB.Data.query("SELECT music FROM user WHERE uid IN (select uid2 from {0})", friends);
 
-		FB.Data.waitOn([friends, friendsMusic], function() {
+		FB.Data.waitOn([myself, friends, friendsMusic], function() {
 			var artists = [];
 			FB.Array.forEach(friendsMusic.value, function(row) {
 				if(row.music != "") {
@@ -156,28 +124,30 @@ function searchFriendsMusics() {
 				return a > b ? -1 : (a < b ? 1 : 0);
 			});
 
+			var json = new Object;
+			json.data = new Array;
+			var user = new Object;
+			user.id = uid;
+			user.name = myself.value[0].name;
+			user.access_token = accessToken;
+			user.prefered_artists = new Array;
+
 			var size = artists.length;
 			if(size > 5) size = 5;
 
-			
-			var results = "";
-
-			results += "<ul>";
-			results += "<li class='title'>Friends top artists:</li>";
 			for(var i=0; i<size; i++) {
-				deezerSearch(artists[i][0]);
-				results += "<li>" + artists[i][0] + ": " + artists[i][1] + " friends</li>";
+				searchAddArtist(artists[i][0]);
+				//user.prefered_artists.push(artists[i]);
 			}
-			results += "</ul>";
+			json.data.push(user);
+			sendUser($.toJSON(json));
+			
 
-			document.getElementById('face').innerHTML += results;
 		});
 	  } else if (response.status === 'not_authorized') {
-		//alert("nao autorizado");
 		// the user is logged in to Facebook, 
 		//but not connected to the app
 	  } else {
-		//alert("nao logado");
 		// the user isn't even logged in to Facebook.
 	  }
 	 });

@@ -8,24 +8,13 @@ class UserManager:
 			if not user:
 				user = User(facebookId = a['id'], name = a['name'])
 			user.create(a['id'], a['name'])
-			user.profile_url = a['profile_url']
 			user.access_token = a['access_token']
-			for b in a['prefered_artists']:
-				user.preferred_artists.append(b)
+			
+			for artist in a['prefered_artists']:
+				user.preferred_artists.append(artist)
 			users.append(user)
 			user.put()
 			
-			for b in a['friends']:
-				friend = User.all().filter("facebookId = ", b['id']).get()
-				if not friend:
-					friend = User(facebookId = b['id'], name = b['name'])
-				friend.create(b['id'], b['name'])
-				user.profile_url = a['profile_url']
-				user.access_token = a['access_token']
-				for b in a['prefered_artists']:
-					user.preferred_artists.append(b)
-				friend.addFriend(user)
-				friend.put()
 		return users
 	
 	def getUsers(self, ids=None):
@@ -58,7 +47,7 @@ class ArtistManager:
 
 			data.append(dataArtist)
 		return data
-
+		
 	def addArtists(self, data):
 		artists = []
 		for a in data:

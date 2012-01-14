@@ -11,10 +11,8 @@ class User(db.Model):
 	name = db.StringProperty(required=True)
 	created = db.DateTimeProperty(auto_now_add=True)
 	updated = db.DateTimeProperty(auto_now=True)
-	profile_url = db.StringProperty()
 	access_token = db.StringProperty()
 	prefered_artists = db.ListProperty(db.Key)
-	friends = db.ListProperty(db.Key)
 
 	def create(self, uid, name):
 		self.facebookId = uid
@@ -24,11 +22,6 @@ class User(db.Model):
 		if not artist.key() in self.preferedArtists:
 			self.preferedArtists.append(artist)
 			artist.likedBy.append(self)
-
-	def addFriend(self, friend):
-		if not friend.key() in self.friends:
-			self.friends.append(friend)
-			friend.friends.append(self)
 
 	def __str__(self):
 		return self.name
