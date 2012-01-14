@@ -91,11 +91,14 @@ class ArtistHandler(ApiRequestHandler):
 			jsonStr = self.request.get("json")
 			data = json.loads(jsonStr)
 
-			retData = self.manager.addArtists(data["data"])
+			artists = self.manager.addArtists(data["data"])
 		except:
 			retData = {"status": "ERROR"}
 
-		return self.returnJson(retData)
+		if artists:
+			return self.returnJson({"status": "OK"})
+		else:
+			return self.returnJson({"status": "ERROR"})
 
 class TrackHandler(ApiRequestHandler):
 	def __init__(self, request, response):
@@ -113,11 +116,13 @@ class TrackHandler(ApiRequestHandler):
 			jsonStr = self.request.get("json")
 			data = json.loads(jsonStr)
 
-			retData = self.manager.addTracks(data["data"])
+			tracks = self.manager.addTracks(data["data"])
+			if tracks:
+				return self.returnJson({"status": "OK"})
+			else:
+				return self.returnJson({"status": "ERROR"})
 		except:
-			retData = {"status": "ERROR"}
-
-		return self.returnJson(retData)
+			return self.returnJson({"status": "ERROR"})
 
 app = webapp2.WSGIApplication([
 								('/', MainPage),
