@@ -40,7 +40,7 @@ class BaseHandler(webapp2.RequestHandler):
 					#			profile_url=profile["link"],
 					#			access_token=cookie["access_token"])
 					user = User(key_name=str(cookie["uid"]),
-								id=str(cookie["uid"]),
+								facebookId=str(cookie["uid"]),
 								name="unknown",
 								profile_url="unknown",
 								access_token=cookie["access_token"])
@@ -123,9 +123,37 @@ class TrackHandler(ApiRequestHandler):
 		except:
 			return self.returnJson({"status": "ERROR"})
 
+class TopArtistsHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, None)
+
+	def get(self):
+		user = User.get_by_key_name(cookie["uid"])
+		if user:
+			allArtists = {}
+			for friend in user.friends:
+				for artist in friend.preferedArtists:
+					try:
+						allArtists[artist.deezerId] += 1
+					except KeyError:
+						allArtists[artist.deezerId] = 0
+
+			artistValues = allArtists.items()
+			artistValues.sort()
+			topArtists = {}
+			for key, value in artistValues:
+				topArtists['name']= key
+				topArtists['value'] = value
+
+			jsonData = {"status": "OK", "data": topArtists}
+			return self.returnJson(jsonData)
+		else:
+			return self.returnJson({"status": "ERROR"})
+
 app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/artist(?:/([^/]+)?)?', ArtistHandler),
 								('/track(?:/([^/]+)?)?', TrackHandler),
+								('/topArtists', TopArtistsHandler),
 							],
 							debug=True)
