@@ -92,13 +92,12 @@ class ArtistHandler(ApiRequestHandler):
 			data = json.loads(jsonStr)
 
 			artists = self.manager.addArtists(data["data"])
+			if artists:
+				return self.returnJson({"status": "OK"})
+			else:
+				return self.returnJson({"status": "ERROR"})
 		except:
 			retData = {"status": "ERROR"}
-
-		if artists:
-			return self.returnJson({"status": "OK"})
-		else:
-			return self.returnJson({"status": "ERROR"})
 
 class TrackHandler(ApiRequestHandler):
 	def __init__(self, request, response):
