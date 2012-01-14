@@ -37,14 +37,17 @@ function deezerSearch(query) {
 					if(artistsJson.data.length > 0) {
 						var json = new Object;
 						json.data = new Array;
-						json.data[0].artist = new Object;
-						json.data[0].artist.id = artistsJson.data[0].id;
-						json.data[0].artist.name = artistsJson.data[0].name;
+						var artist = new Object;
+						artist.id = artistsJson.data[0].id;
+						artist.name = artistsJson.data[0].name;
+						artist.tracks = new Array;
+						json.data.push(artist);
 						for(var i=0; i< songsJson.data.length; i++){
 							if(songsJson.data[i].artist.id == artistsJson.data[0].id) {				 
-								json.data[0].artist.tracks[i] = new Object;
-								json.data[0].artist.tracks[i].id = songsJson.data[i].id; 
-								json.data[0].artist.tracks[i].name = songsJson.data[i].title;
+								var track = new Object;
+								track.id = songsJson.data[i].id; 
+								track.name = songsJson.data[i].title;
+								artist.tracks.push(track);
 							}
 						}
 						sendArtist($.toJSON(json));
