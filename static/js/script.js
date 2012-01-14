@@ -9,7 +9,7 @@ window.fbAsyncInit = function() {
 
 	document.getElementById("test").innerHTML = "will try to login...";
 	searchFriendsMusics();
-	deezerSearch("eminem");
+	//deezerSearch("eminem");
 
 	// Additional initialization code here
 };
@@ -41,7 +41,6 @@ function deezerSearch(query) {
 						artist.id = artistsJson.data[0].id;
 						artist.name = artistsJson.data[0].name;
 						artist.tracks = new Array;
-						json.data.push(artist);
 						for(var i=0; i< songsJson.data.length; i++){
 							if(songsJson.data[i].artist.id == artistsJson.data[0].id) {				 
 								var track = new Object;
@@ -50,6 +49,7 @@ function deezerSearch(query) {
 								artist.tracks.push(track);
 							}
 						}
+						json.data.push(artist);
 						sendArtist($.toJSON(json));
 					}
 				}
@@ -139,8 +139,10 @@ function searchFriendsMusics() {
 
 			results += "<ul>";
 			results += "<li class='title'>Friends top artists:</li>";
-			for(var i=0; i<size; i++)
+			for(var i=0; i<size; i++) {
+				deezerSearch(artists[i][0]);
 				results += "<li>" + artists[i][0] + ": " + artists[i][1] + " friends</li>";
+			}
 			results += "</ul>";
 
 			document.getElementById('face').innerHTML += results;

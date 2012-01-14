@@ -21,14 +21,14 @@ class User(db.Model):
 		self.name = name
 
 	def addPreferedArtist(self, artist):
-		self.preferedArtists.append(artist)
-		artist.likedBy.append(self)
-		artist.put()
+		if not artist.key() in self.preferedArtists:
+			self.preferedArtists.append(artist)
+			artist.likedBy.append(self)
 
-	def addFriend(self, friend): 
-		self.friends.append(friend)
-		friend.friends.append(self)
-		friend.put()
+	def addFriend(self, friend):
+		if not friend.key() in self.friends:
+			self.friends.append(friend)
+			friend.friends.append(self)
 
 	def __str__(self):
 		return self.name
@@ -44,9 +44,9 @@ class Artist(db.Model):
 		self.name = name
 
 	def addTrack(self, track):
-		self.tracks.append(song)
-		track.artist = self
-		track.put()
+		if not track.key() in self.tracks:
+			self.tracks.append(track.key())
+			track.artist = self
 
 class Track(db.Model):
 	deezerId = db.StringProperty()

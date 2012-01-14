@@ -87,29 +87,29 @@ class ArtistHandler(ApiRequestHandler):
 
 	def post(self, param):
 		retData = {}
-		try:
-			jsonStr = self.request.get("json")
-			data = json.loads(jsonStr)
+		#try:
+		jsonStr = self.request.get("json")
+		data = json.loads(jsonStr)
 
-			artists = self.manager.addArtists(data["data"])
-			if artists:
-				return self.returnJson({"status": "OK"})
-			else:
-				return self.returnJson({"status": "ERROR"})
-		except:
-			retData = {"status": "ERROR"}
+		artists = self.manager.addArtists(data["data"])
+		if artists:
+			return self.returnJson({"status": "OK"})
+		else:
+			return self.returnJson({"status": "ERROR"})
+		#except:
+		#	return self.returnJson({"status": "ERROR"})
 
 class TrackHandler(ApiRequestHandler):
 	def __init__(self, request, response):
 		ApiRequestHandler.__init__(self, request, response, TrackManager())
 
 	def get(self, param):
-		param = urllib.unquote(urllib.unquote(param))
+		#param = urllib.unquote(urllib.unquote(param))
 		jsonData = {"data": self.manager.getTracks()}
 		return self.returnJson(jsonData)
 
 	def post(self, param):
-		param = urllib.unquote(urllib.unquote(param))
+		#param = urllib.unquote(urllib.unquote(param))
 		retData = {}
 		try:
 			jsonStr = self.request.get("json")
