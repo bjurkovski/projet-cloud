@@ -9,7 +9,13 @@ class ArtistManager:
 			artists = artists.filter("deezerId IN", ids)
 
 		for a in artists:
-			dataArtist = {"id": a.deezerId, "name": a.name}
+			tracks = Track.all().filter("artist = ", a)
+			aTracks = []
+			for t in tracks:
+				track = {"id": t.deezerId, "name": t.name}
+				aTracks.append(track)
+			dataArtist = {"id": a.deezerId, "name": a.name, "tracks": aTracks}
+
 			data.append(dataArtist)
 		return data
 
@@ -20,13 +26,20 @@ class ArtistManager:
 			if not artist:
 				artist = Artist()
 			artist.create(a['id'], a['name'])
-			artists.append(artist)
 
+			try:
+				trackManager = TrackManager()
+				tracks = trackManager.addTracks(a['tracks'])['tracks']
+				for t in tracks:
+					artist.addTrack(t)
+			except KeyError:
+				pass
+
+			artists.append(artist)
 		for a in artists:
 			a.put()
 
-		return {"status": "OK", "added": len(artists)}
-
+		return artists
 
 class TrackManager:
 	def getTracks(self):
@@ -49,4 +62,4 @@ class TrackManager:
 		for t in tracks:
 			t.put()
 
-		return {"status": "OK", "added": len(tracks)}
+		return tracks
