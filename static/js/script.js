@@ -9,6 +9,7 @@ window.fbAsyncInit = function() {
 
 	document.getElementById("test").innerHTML = "will try to login...";
 	searchFriendsMusics();
+	testUser();
 	//deezerSearch("eminem");
 
 	// Additional initialization code here
@@ -68,6 +69,33 @@ function sendArtist(json) {
 						alert("Error creating a new artist...");
 				}
 	});
+}
+
+function testUser() {
+/*
+	facebookId = db.StringProperty(required=True)
+	name = db.StringProperty(required=True)
+	created = db.DateTimeProperty(auto_now_add=True)
+	updated = db.DateTimeProperty(auto_now=True)
+	profile_url = db.StringProperty()
+	access_token = db.StringProperty()
+	prefered_artists = db.ListProperty(db.Key)
+	friends = db.ListProperty(db.Key)
+*/
+
+
+
+	var json = new Object;
+	json.data = new Array;
+	var user = new Object;
+	user.id = "123";
+	user.name = "lalala";
+	user.profile_url = "";
+	user.access_token = "";
+	user.prefered_artists = [];
+	user.friends = [];
+	json.data.push(user);
+	sendUser($.toJSON(json));
 }
 
 function sendUser(json) {

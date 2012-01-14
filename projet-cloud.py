@@ -73,6 +73,29 @@ class ApiRequestHandler(BaseHandler):
 	def returnJson(self, data):
 		return self.response.out.write(json.dumps(data))
 
+class UserHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, UserManager())
+		
+	def get(self, param):
+		ids = None
+		if param:
+			ids = param.split(",")
+
+		jsonData = {"data": self.manager.getUsers(ids)}
+		return self.returnJson(jsonData)
+
+	def post(self, param):
+		retData = {}
+		jsonStr = self.request.get("json")
+		data = json.loads(jsonStr)
+
+		users = self.manager.addUsers(data["data"])
+		if users:
+			return self.returnJson({"status": "OK"})
+		else:
+			return self.returnJson({"status": "ERROR"})
+			
 class ArtistHandler(ApiRequestHandler):
 	def __init__(self, request, response):
 		ApiRequestHandler.__init__(self, request, response, ArtistManager())
@@ -152,6 +175,7 @@ class TopArtistsHandler(ApiRequestHandler):
 
 app = webapp2.WSGIApplication([
 								('/', MainPage),
+								('/user(?:/([^/]+)?)?', UserHandler),
 								('/artist(?:/([^/]+)?)?', ArtistHandler),
 								('/track(?:/([^/]+)?)?', TrackHandler),
 								('/topArtists', TopArtistsHandler),

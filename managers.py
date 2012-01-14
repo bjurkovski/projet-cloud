@@ -2,16 +2,15 @@ from models import *
 
 class UserManager:
 	def addUsers(self, data):
-
-		users[]			
+		users = []			
 		for a in data:
 			user = User.all().filter("facebookId = ", a['id']).get()
 			if not user:
-				user = User()
+				user = User(facebookId = a['id'], name = a['name'])
 			user.create(a['id'], a['name'])
 			user.profile_url = a['profile_url']
 			user.access_token = a['access_token']
-			for b in a['preferred_artists']:
+			for b in a['prefered_artists']:
 				user.preferred_artists.append(b)
 			users.append(user)
 			user.put()
@@ -19,16 +18,27 @@ class UserManager:
 			for b in a['friends']:
 				friend = User.all().filter("facebookId = ", b['id']).get()
 				if not friend:
-					friend = User()
+					friend = User(facebookId = b['id'], name = b['name'])
 				friend.create(b['id'], b['name'])
 				user.profile_url = a['profile_url']
 				user.access_token = a['access_token']
-				for b in a['preferred_artists']:
+				for b in a['prefered_artists']:
 					user.preferred_artists.append(b)
 				friend.addFriend(user)
 				friend.put()
-				
 		return users
+	
+	def getUsers(self, ids=None):
+		data = []
+		users = User.all()
+
+		if ids:
+			users = users.filter("facebookId IN ", ids)
+	
+		for a in users:
+			dataUser = {"id": a.facebookId, "name": a.name}
+			data.append(dataUser)
+		return data
 
 class ArtistManager:
 	def getArtists(self, ids=None):
@@ -36,7 +46,7 @@ class ArtistManager:
 		artists = Artist.all()
 
 		if ids:
-			artists = artists.filter("deezerId IN", ids)
+			artists = artists.filter("deezerId IN ", ids)
 
 		for a in artists:
 			aTracks = []
