@@ -116,22 +116,23 @@ function searchFriendsMusics() {
 		var friendsMusic = FB.Data.query("SELECT music FROM user WHERE uid IN (select uid2 from {0})", friends);
 
 		FB.Data.waitOn([friends, friendsMusic], function() {
-			var count = 0;
 			var artists = [];
 			FB.Array.forEach(friendsMusic.value, function(row) {
-				var musics = row.music.split(",")
-				for(var j=0; j<musics.length; j++) {
-					var aName = musics[j];
-					var found = false;
-					for(var k=0; k<artists.length; k++) {
-						if(artists[k][0] == aName) {
-							artists[k][1]++;
-							found = true;
+				if(row.music != "") {
+					//document.getElementById('test').innerHTML += "<br>*" + row.music + "*";
+					var musics = row.music.split(",")
+					for(var j=0; j<musics.length; j++) {
+						var aName = musics[j];
+						var found = false;
+						for(var k=0; k<artists.length; k++) {
+							if(artists[k][0] == aName) {
+								artists[k][1]++;
+								found = true;
+							}
 						}
+						if(!found) artists.push([aName, 1]);
 					}
-					if(!found) artists.push([aName, 1]);
 				}
-				count++;
 		   });
 
 			artists.sort(function(a, b) {
