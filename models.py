@@ -14,13 +14,9 @@ class User(db.Model):
 	access_token = db.StringProperty()
 	prefered_artists = db.ListProperty(db.Key)
 
-	def create(self, uid, name):
-		self.facebookId = uid
-		self.name = name
-
 	def addPreferedArtist(self, artist):
-		if not artist.key() in self.preferedArtists:
-			self.preferedArtists.append(artist)
+		if not artist.key() in self.prefered_artists:
+			self.prefered_artists.append(artist.key())
 			artist.likedBy.append(self)
 
 	def __str__(self):

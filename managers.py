@@ -1,19 +1,31 @@
 from models import *
+import logging
 
 class UserManager:
 	def addUsers(self, data):
 		users = []			
-		for a in data:
-			user = User.all().filter("facebookId = ", a['id']).get()
-			if not user:
-				user = User(facebookId = a['id'], name = a['name'])
-			user.create(a['id'], a['name'])
-			user.access_token = a['access_token']
+		for u in data:
+			user = User.all().filter("facebookId = ", u['id']).get()
+			if user:
+					user.name = u['name']
+			else:
+				user = User(key_name=u['id'], facebookId = u['id'], name = u['name'])
+
+			try:
+				user.access_token = u['access_token']
+			except KeyError:
+				pass
 			
-			for artist in a['prefered_artists']:
-				user.preferred_artists.append(artist)
-			users.append(user)
+			try:
+				logging.debug(u['prefered_artists'])
+				for aId in u['prefered_artists']:
+					artist = Artist.all().filter("deezerId = ", aId).get()
+					user.addPreferedArtist(artist)
+			except KeyError:
+				pass
+
 			user.put()
+			users.append(user)
 			
 		return users
 	
@@ -24,8 +36,8 @@ class UserManager:
 		if ids:
 			users = users.filter("facebookId IN ", ids)
 	
-		for a in users:
-			dataUser = {"id": a.facebookId, "name": a.name}
+		for u in users:
+			dataUser = {"id": u.facebookId, "name": u.name, "prefered_artists": [Artist.get(a).deezerId for a in u.prefered_artists]}
 			data.append(dataUser)
 		return data
 

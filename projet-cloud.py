@@ -39,12 +39,9 @@ class BaseHandler(webapp2.RequestHandler):
 					#			name=profile["name"],
 					#			profile_url=profile["link"],
 					#			access_token=cookie["access_token"])
-					user = User(key_name=str(cookie["uid"]),
-								facebookId=str(cookie["uid"]),
-								name="unknown",
-								profile_url="unknown",
-								access_token=cookie["access_token"])
-					user.put()
+					userManager = UserManager()
+					uData = [{"id": cookie["uid"], "name": "unknown", "access_token": cookie["access_token"]}]
+					user = userManager.addUsers(uData)[0]
 				elif user.access_token != cookie["access_token"]:
 					user.access_token = cookie["access_token"]
 					user.put()
