@@ -1,5 +1,6 @@
 from models import *
 import logging
+import datetime
 
 class UserManager:
 	def addUsers(self, data):
@@ -37,7 +38,10 @@ class UserManager:
 			users = users.filter("facebookId IN ", ids)
 	
 		for u in users:
-			dataUser = {"id": u.facebookId, "name": u.name, "prefered_artists": [Artist.get(a).deezerId for a in u.prefered_artists]}
+			lastUpdated = datetime.datetime.now() - u.updated
+			shouldUpdate = 1 if lastUpdated.days > 1 else 0
+			dataUser = {"id": u.facebookId, "name": u.name, "last_updated" : str(lastUpdated), 
+			"should_update" : shouldUpdate, "prefered_artists": [Artist.get(a).deezerId for a in u.prefered_artists]}
 			data.append(dataUser)
 		return data
 

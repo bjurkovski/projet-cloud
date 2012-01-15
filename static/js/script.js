@@ -8,7 +8,7 @@ window.fbAsyncInit = function() {
 	});
 
 	document.getElementById("test").innerHTML = "will try to login...";
-	searchFriendsMusics();
+	savePreferedArtists();
 
 	// Additional initialization code here
 };
@@ -68,7 +68,7 @@ function sendArtist(json, callId) {
 				success: function(jsonAnswer) {
 //					alert(callId);
 //					asyncCallsFinished[callId] = 1;
-					asyncCallsReturn[callId] = id
+					asyncCallsReturn[callId] = id;
 					if(jsonAnswer.status == "ERROR")
 						alert("Error creating a new artist...");
 				}
@@ -102,14 +102,40 @@ function sendUser(json) {
 		});
 	}
 	else {
-		setTimeout(function() { sendUser(json); }, 100);
+		setTimeout(function() { sendUser(json); }, 50);
 	}
 }
 
-function searchFriendsMusics() {
+function savePreferedArtists(){
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
-		document.getElementById('face').innerHTML += "Connected! ";
+			var uid = response.authResponse.userID;
+
+			$.ajax({url: "/user?q=" + uid,
+					type: 'GET',
+					dataType: 'json',
+					success: function(users) {
+						var shouldUpdate = true;
+						if(users.data.length > 0) {						
+							shouldUpdate = users.data[0].should_update;
+						}
+						if (shouldUpdate){
+							document.getElementById('face').innerHTML += "Finding your friends artists..."
+							searchFriendsArtists();
+						}
+						else
+						document.getElementById('face').innerHTML += "You have updated Recently your artists... ";
+					}
+				});
+	  } else if (response.status === 'not_authorized') {
+	  } else {
+	  }
+	 });
+}
+
+function searchFriendsArtists() {
+	FB.getLoginStatus(function(response) {
+	  if (response.status === 'connected') {
 		var uid = response.authResponse.userID;
 		var accessToken = response.authResponse.accessToken;
 		var myself = FB.Data.query('select name, uid from user where uid={0}', uid);
