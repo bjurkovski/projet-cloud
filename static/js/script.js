@@ -111,7 +111,7 @@ function savePreferedArtists(){
 	  if (response.status === 'connected') {
 			var uid = response.authResponse.userID;
 
-			$.ajax({url: "/user?q=" + uid,
+			$.ajax({url: "/user/" + uid,
 					type: 'GET',
 					dataType: 'json',
 					success: function(users) {
@@ -123,8 +123,9 @@ function savePreferedArtists(){
 							document.getElementById('face').innerHTML += "Finding your friends artists..."
 							searchFriendsArtists();
 						}
-						else
-						document.getElementById('face').innerHTML += "You have updated Recently your artists... ";
+						else {
+							document.getElementById('face').innerHTML += "You have updated Recently your artists... ";
+						}
 					}
 				});
 	  } else if (response.status === 'not_authorized') {
