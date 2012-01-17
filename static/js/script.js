@@ -115,16 +115,18 @@ function savePreferedArtists(){
 					type: 'GET',
 					dataType: 'json',
 					success: function(users) {
-						var shouldUpdate = true;
+						var user = null;
 						if(users.data.length > 0) {						
-							shouldUpdate = users.data[0].should_update;
+							user = users.data[0];
 						}
-						if (shouldUpdate){
+
+						if (user && user.should_update){
 							document.getElementById('face').innerHTML += "Finding your friends artists..."
 							searchFriendsArtists();
 						}
 						else {
 							document.getElementById('face').innerHTML += "You have updated Recently your artists... ";
+							showArtists(user.prefered_artists);
 						}
 					}
 				});
@@ -132,6 +134,26 @@ function savePreferedArtists(){
 	  } else {
 	  }
 	 });
+}
+
+function showArtists(ids) {
+	var param = "";
+	for(var i=0; i<ids.length; i++) {
+		if(i>0) param += ",";
+		param += ids;
+	}
+
+	$.ajax({url: "/artist/" + param,
+		type: 'GET',
+		dataType: 'json',
+		success: function(artists) {
+			var result = "";
+			for(var i=0; i<artists.data.length; i++) {
+				result += artists.data[i].name + "<br/>";
+			}
+			document.getElementById('face').innerHTML += "<br/>Friends Top Artists:<br/>"+result;
+		}
+	});
 }
 
 function searchFriendsArtists() {
