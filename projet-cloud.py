@@ -215,22 +215,23 @@ class FacebookHandler(ApiRequestHandler):
 			#}
 		]
 
-		""
+		#""
 		#"?ids={result=get-friends:$.data.*.id}"
 		#"method/fql.query?query=select+name+from+user+where+uid=4"
 		#SELECT music FROM user WHERE uid IN (select uid2 from {0})
-		#data = self.graph.request("", post_args={
-		#	"batch": json.dumps(requests)
-		#})
+		data = self.graph.request("", post_args={
+			"batch": json.dumps(requests)
+		})
 
 		#jsonData = self.graph.fql("SELECT uid2 FROM friend WHERE uid1={0}", args=self.current_user.facebookId)
 		#jsonData = {"music": urllib.urlencode({"batch": requests})}
 		#jsonData = {"data": urllib.urlencode(friendMusics)}
-		cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
-		jsonData = {"data": cookie["access_token"]}
+		#cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
+		#jsonData = {"data": cookie["access_token"]}
+		jsonData = {"data": data}
 		return self.returnJson(jsonData)
 
-class DeezerSongsHandler(ApiRequestHandler):
+class DeezerSongHandler(ApiRequestHandler):
 	def __init__(self, request, response):
 		ApiRequestHandler.__init__(self, request, response, None)
 		

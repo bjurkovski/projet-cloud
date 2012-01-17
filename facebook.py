@@ -58,6 +58,9 @@ try:
 except ImportError:
     from cgi import parse_qs
 
+import socket
+socket.setdefaulttimeout(25)
+
 class GraphAPI(object):
     """A client for the Facebook Graph API.
 
