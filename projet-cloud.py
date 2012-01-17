@@ -7,7 +7,7 @@ from django.utils import simplejson as json
 
 from models import *
 from managers import *
-#from facepy import GraphAPI
+from deezer import *
 
 PAGES_FOLDER = "pages/"
 FB_APP_ID = '173535979414436'
@@ -230,6 +230,21 @@ class FacebookHandler(ApiRequestHandler):
 		jsonData = {"data": cookie["access_token"]}
 		return self.returnJson(jsonData)
 
+class DeezerSongsHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, None)
+		
+	def get(self, query):
+		return None
+
+class DeezerArtistHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, None)
+		
+	def get(self, query):
+		return None
+		
+
 app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/user(?:/([^/]+)?)?', UserHandler),
@@ -237,5 +252,7 @@ app = webapp2.WSGIApplication([
 								('/track(?:/([^/]+)?)?', TrackHandler),
 								('/topArtists', TopArtistsHandler),
 								('/facebook', FacebookHandler),
+								('/deezerSongs', DeezerSongHandler),
+								('/deezerArtist', DeezerArtistHandler),
 							],
 							debug=True)
