@@ -8,12 +8,11 @@ from django.utils import simplejson as json
 from models import *
 from managers import *
 from deezer import *
+from facebookMediator import *
 
 PAGES_FOLDER = "pages/"
-FB_APP_ID = '173535979414436'
-FB_APP_SECRET = '7eef3a773b0a2da0eaedd3949d01ce89'
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-#facebookApi = facebook.Facebook(FB_API_KEY, FB_SECRET_KEY)
+facebookMediator = FacebookMediator()
 
 class BaseHandler(webapp2.RequestHandler):
 	"""Provides access to the active Facebook user in self.current_user
@@ -25,15 +24,13 @@ class BaseHandler(webapp2.RequestHandler):
 	"""
 	@property
 	def graph(self):
-		cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
-		facebook.GraphAPI(cookie["access_token"])
-		return facebook.GraphAPI(cookie["access_token"])
+		return facebookMediator.getGraph(self.request.cookies)
 
 	@property
 	def current_user(self):
 		if not hasattr(self, "_current_user"):
 			self._current_user = None
-			cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
+			cookie = facebookMediator.getCurrentUserCookie(self.request.cookies)
 			if cookie:
 				# Store a local instance of the user data so we don't need
 				# a round-trip to Facebook on every request
@@ -44,7 +41,6 @@ class BaseHandler(webapp2.RequestHandler):
 					#			profile_url=profile["link"],
 					userManager = UserManager()
 					uData = [{"id": profile["id"], "name": profile["name"], "access_token": cookie["access_token"]}]
-					#uData = [{"id": cookie["uid"], "name": "unknown", "access_token": cookie["access_token"]}]
 					user = userManager.addUsers(uData)[0]
 				elif user.access_token != cookie["access_token"]:
 					user.access_token = cookie["access_token"]
@@ -87,15 +83,17 @@ class UserHandler(ApiRequestHandler):
 		return self.returnJson(jsonData)
 
 	def post(self, param):
-		retData = {}
 		jsonStr = self.request.get("json")
 		data = json.loads(jsonStr)
-
-		users = self.manager.addUsers(data["data"])
-		if users:
+		if param == "update":
 			return self.returnJson({"status": "OK"})
 		else:
-			return self.returnJson({"status": "ERROR"})
+			retData = {}
+			users = self.manager.addUsers(data["data"])
+			if users:
+				return self.returnJson({"status": "OK"})
+			else:
+				return self.returnJson({"status": "ERROR"})
 			
 class ArtistHandler(ApiRequestHandler):
 	def __init__(self, request, response):
@@ -179,56 +177,12 @@ class FacebookHandler(ApiRequestHandler):
 		ApiRequestHandler.__init__(self, request, response, None)
 
 	def get(self):
+#		code examples (might be useful in the future)
 #		friendsJson = self.graph.get_connections("me", "friends")
-#		friends = friendsJson["data"]
-#		music = {}
-#		for friend in friends:
-#			music = self.graph.get_connections(friend["id"], "music")
+#		music = self.graph.get_connections(friend["id"], "music")
+#		requests[currentRequest].append({"method": "GET", "relative_url": friend["id"]+"/music"})
 
-#		requests = [[]]
-#		size = 0
-#		currentRequest = 0
-#		for friend in friends:
-#			if size == 50:
-#				size = 0
-#				currentRequest += 1
-#				requests.append([])
-#			requests[currentRequest].append({"method": "GET", "relative_url": friend["id"]+"/music"})
-#			size += 1
-		
-#		data = []
-#		for request in requests:	
-#			data.append(self.graph.request("", post_args={"batch": json.dumps(request)}))
-
-		friendMusics = {
-			"musics": "SELECT music FROM user WHERE uid IN {result=get-friends:$.data.*.id}"
-		}
-
-		requests = [
-			{"method": "POST",
-			 "relative_url": "method/fql.query?query=SELECT+music+FROM+user+WHERE+uid+IN+(SELECT+uid2+FROM+friend+WHERE+uid1=me())"
-			}#,
-			#{"method": "GET",
-			 #"relative_url": {
-				#"musics": "SELECT music FROM user WHERE uid IN {result=get-friends:$.data.*.id}"
-				#}
-			#}
-		]
-
-		#""
-		#"?ids={result=get-friends:$.data.*.id}"
-		#"method/fql.query?query=select+name+from+user+where+uid=4"
-		#SELECT music FROM user WHERE uid IN (select uid2 from {0})
-		data = self.graph.request("", post_args={
-			"batch": json.dumps(requests)
-		})
-
-		#jsonData = self.graph.fql("SELECT uid2 FROM friend WHERE uid1={0}", args=self.current_user.facebookId)
-		#jsonData = {"music": urllib.urlencode({"batch": requests})}
-		#jsonData = {"data": urllib.urlencode(friendMusics)}
-		#cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
-		#jsonData = {"data": cookie["access_token"]}
-		jsonData = {"data": data}
+		jsonData = {"data": facebookMediator.getTopFriendsMusic(5, self.request.cookies)}
 		return self.returnJson(jsonData)
 
 class DeezerSongHandler(ApiRequestHandler):
