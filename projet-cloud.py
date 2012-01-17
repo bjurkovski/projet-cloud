@@ -7,6 +7,7 @@ from django.utils import simplejson as json
 
 from models import *
 from managers import *
+from deezer import *
 
 PAGES_FOLDER = "pages/"
 FB_APP_ID = '173535979414436'
@@ -170,11 +171,27 @@ class TopArtistsHandler(ApiRequestHandler):
 		else:
 			return self.returnJson({"status": "ERROR"})
 
+class DeezerSongsHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, None)
+		
+	def get(self, query):
+		return None
+
+class DeezerArtistHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, None)
+		
+	def get(self, query):
+		return None
+		
 app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/user(?:/([^/]+)?)?', UserHandler),
 								('/artist(?:/([^/]+)?)?', ArtistHandler),
 								('/track(?:/([^/]+)?)?', TrackHandler),
 								('/topArtists', TopArtistsHandler),
+								('/deezerSongs', DeezerSongHandler),
+								('/deezerArtist', DeezerArtistHandler),
 							],
 							debug=True)
