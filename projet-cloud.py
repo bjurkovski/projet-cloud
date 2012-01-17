@@ -7,6 +7,7 @@ from django.utils import simplejson as json
 
 from models import *
 from managers import *
+#from facepy import GraphAPI
 
 PAGES_FOLDER = "pages/"
 FB_APP_ID = '173535979414436'
@@ -23,6 +24,12 @@ class BaseHandler(webapp2.RequestHandler):
 	more information.
 	"""
 	@property
+	def graph(self):
+		cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
+		facebook.GraphAPI(cookie["access_token"])
+		return facebook.GraphAPI(cookie["access_token"])
+
+	@property
 	def current_user(self):
 		if not hasattr(self, "_current_user"):
 			self._current_user = None
@@ -32,15 +39,12 @@ class BaseHandler(webapp2.RequestHandler):
 				# a round-trip to Facebook on every request
 				user = User.get_by_key_name(cookie["uid"])
 				if not user:
-					#graph = facebook.GraphAPI(cookie["access_token"])
-					#profile = graph.get_object("me")
-					#user = User(key_name=str(profile["id"]),
-					#			id=str(profile["id"]),
-					#			name=profile["name"],
+					graph = facebook.GraphAPI(cookie["access_token"])
+					profile = graph.get_object("me")
 					#			profile_url=profile["link"],
-					#			access_token=cookie["access_token"])
 					userManager = UserManager()
-					uData = [{"id": cookie["uid"], "name": "unknown", "access_token": cookie["access_token"]}]
+					uData = [{"id": profile["id"], "name": profile["name"], "access_token": cookie["access_token"]}]
+					#uData = [{"id": cookie["uid"], "name": "unknown", "access_token": cookie["access_token"]}]
 					user = userManager.addUsers(uData)[0]
 				elif user.access_token != cookie["access_token"]:
 					user.access_token = cookie["access_token"]
@@ -170,11 +174,68 @@ class TopArtistsHandler(ApiRequestHandler):
 		else:
 			return self.returnJson({"status": "ERROR"})
 
+class FacebookHandler(ApiRequestHandler):
+	def __init__(self, request, response):
+		ApiRequestHandler.__init__(self, request, response, None)
+
+	def get(self):
+#		friendsJson = self.graph.get_connections("me", "friends")
+#		friends = friendsJson["data"]
+#		music = {}
+#		for friend in friends:
+#			music = self.graph.get_connections(friend["id"], "music")
+
+#		requests = [[]]
+#		size = 0
+#		currentRequest = 0
+#		for friend in friends:
+#			if size == 50:
+#				size = 0
+#				currentRequest += 1
+#				requests.append([])
+#			requests[currentRequest].append({"method": "GET", "relative_url": friend["id"]+"/music"})
+#			size += 1
+		
+#		data = []
+#		for request in requests:	
+#			data.append(self.graph.request("", post_args={"batch": json.dumps(request)}))
+
+		friendMusics = {
+			"musics": "SELECT music FROM user WHERE uid IN {result=get-friends:$.data.*.id}"
+		}
+
+		requests = [
+			{"method": "POST",
+			 "relative_url": "method/fql.query?query=SELECT+music+FROM+user+WHERE+uid+IN+(SELECT+uid2+FROM+friend+WHERE+uid1=me())"
+			}#,
+			#{"method": "GET",
+			 #"relative_url": {
+				#"musics": "SELECT music FROM user WHERE uid IN {result=get-friends:$.data.*.id}"
+				#}
+			#}
+		]
+
+		""
+		#"?ids={result=get-friends:$.data.*.id}"
+		#"method/fql.query?query=select+name+from+user+where+uid=4"
+		#SELECT music FROM user WHERE uid IN (select uid2 from {0})
+		#data = self.graph.request("", post_args={
+		#	"batch": json.dumps(requests)
+		#})
+
+		#jsonData = self.graph.fql("SELECT uid2 FROM friend WHERE uid1={0}", args=self.current_user.facebookId)
+		#jsonData = {"music": urllib.urlencode({"batch": requests})}
+		#jsonData = {"data": urllib.urlencode(friendMusics)}
+		cookie = facebook.get_user_from_cookie(self.request.cookies, FB_APP_ID, FB_APP_SECRET)
+		jsonData = {"data": cookie["access_token"]}
+		return self.returnJson(jsonData)
+
 app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/user(?:/([^/]+)?)?', UserHandler),
 								('/artist(?:/([^/]+)?)?', ArtistHandler),
 								('/track(?:/([^/]+)?)?', TrackHandler),
 								('/topArtists', TopArtistsHandler),
+								('/facebook', FacebookHandler),
 							],
 							debug=True)

@@ -8,7 +8,7 @@ window.fbAsyncInit = function() {
 	});
 
 	document.getElementById("test").innerHTML = "will try to login...";
-	savePreferedArtists();
+	//savePreferedArtists();
 
 	// Additional initialization code here
 };

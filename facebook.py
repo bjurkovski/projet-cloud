@@ -244,9 +244,9 @@ class GraphAPI(object):
                 args["access_token"] = self.access_token
         post_data = None if post_args is None else urllib.urlencode(post_args)
         try:
-            file = urllib2.urlopen("https://graph.facebook.com/" + path + "?" +
+            file = urllib.urlopen("https://graph.facebook.com/" + path + "?" +
                                   urllib.urlencode(args), post_data)
-        except urllib2.HTTPError, e:
+        except IOError, e:
             response = _parse_json( e.read() )
             raise GraphAPIError(response["error"]["type"],
                     response["error"]["message"])
@@ -334,7 +334,7 @@ class GraphAPI(object):
 
         args["format"]="json"
 
-        file = urllib2.urlopen("https://api.facebook.com/method/"+ fql_method +
+        file = urllib.urlopen("https://api.facebook.com/method/"+ fql_method +
                               "?" + urllib.urlencode(args), post_data)
         try:
             content  = file.read()
