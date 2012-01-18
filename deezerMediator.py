@@ -11,7 +11,7 @@ class DeezerMediator:
 		page = urllib.urlopen(DeezerMediator.API_URL + DeezerMediator.API_VERSION + '/search/artist?q=' + query)			
 		content = json.loads(page.read())
 		
-		return content['data']
+		return content['data'][0]
 		
 	def getTracks(self, artist):
 		songs = []
