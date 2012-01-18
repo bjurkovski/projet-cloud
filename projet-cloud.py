@@ -7,7 +7,7 @@ from django.utils import simplejson as json
 
 from models import *
 from managers import *
-from deezer import *
+from deezerMediator import *
 from facebookMediator import *
 
 PAGES_FOLDER = "pages/"
@@ -192,20 +192,24 @@ class FacebookHandler(ApiRequestHandler):
 		jsonData = {"data": topArtists}
 		return self.returnJson(jsonData)
 
-class DeezerSongHandler(ApiRequestHandler):
+class DeezerTrackHandler(ApiRequestHandler):
 	def __init__(self, request, response):
 		ApiRequestHandler.__init__(self, request, response, None)
 		
 	def get(self, query):
-		return None
+		deezerMediator = DeezerMediator()
+		artist = deezerMediator.getArtist(query)
+		jsonData = {"data": deezerMediator.getTracks(artist)}
+		return self.returnJson(jsonData)
 
 class DeezerArtistHandler(ApiRequestHandler):
 	def __init__(self, request, response):
 		ApiRequestHandler.__init__(self, request, response, None)
-		
 	def get(self, query):
-		return None
-		
+		deezerMediator = DeezerMediator()
+		jsonData = {"data": deezerMediator.getArtist(query)}
+		return self.returnJson(jsonData)
+
 
 app = webapp2.WSGIApplication([
 								('/', MainPage),
@@ -214,7 +218,7 @@ app = webapp2.WSGIApplication([
 								('/track(?:/([^/]+)?)?', TrackHandler),
 								('/topArtists', TopArtistsHandler),
 								('/facebook', FacebookHandler),
-								('/deezerSongs', DeezerSongHandler),
-								('/deezerArtist', DeezerArtistHandler),
+								('/deezerTracks(?:/([^/]+)?)?', DeezerTrackHandler),
+								('/deezerArtist(?:/([^/]+)?)?', DeezerArtistHandler),
 							],
 							debug=True)
