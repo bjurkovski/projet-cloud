@@ -181,8 +181,15 @@ class FacebookHandler(ApiRequestHandler):
 #		friendsJson = self.graph.get_connections("me", "friends")
 #		music = self.graph.get_connections(friend["id"], "music")
 #		requests[currentRequest].append({"method": "GET", "relative_url": friend["id"]+"/music"})
+		deezerMediator = DeezerAPI()
+		topArtists = facebookMediator.getTopFriendsMusic(5, self.request.cookies)
+		for artist in topArtists:
+			a = deezerMediator.getArtist(artist["artist"])
+			allTracks = deezerMediator.getSongs(a)
+			tracks = allTracks[:min(5, len(allTracks))]
+			artist["tracks"] = tracks
 
-		jsonData = {"data": facebookMediator.getTopFriendsMusic(5, self.request.cookies)}
+		jsonData = {"data": topArtists}
 		return self.returnJson(jsonData)
 
 class DeezerSongHandler(ApiRequestHandler):
