@@ -79,7 +79,9 @@ class UserHandler(ApiRequestHandler):
 		if param:
 			ids = param.split(",")
 
-		jsonData = {"data": self.manager.getUsers(ids)}
+		users = [u.toDict() for u in self.manager.getUsers(ids)]
+		status = "OK" if len(users) > 0 else "ERROR"
+		jsonData = {"status": status, "data": users}
 		return self.returnJson(jsonData)
 
 	def post(self, param):
@@ -104,7 +106,9 @@ class ArtistHandler(ApiRequestHandler):
 		if param:
 			ids = param.split(",")
 
-		jsonData = {"data": self.manager.getArtists(ids)}
+		artists = [a.toDict() for a in self.manager.getArtists(ids)]
+		status = "OK" if len(artists) > 0 else "ERROR"
+		jsonData = {"status": status, "data": artists}
 		return self.returnJson(jsonData)
 
 	def post(self, param):
@@ -125,12 +129,30 @@ class TrackHandler(ApiRequestHandler):
 	def __init__(self, request, response):
 		ApiRequestHandler.__init__(self, request, response, TrackManager())
 
-	def get(self, param):
-		#param = urllib.unquote(urllib.unquote(param))
-		jsonData = {"data": self.manager.getTracks()}
+	def get(self, criteria, param):
+		ids = None
+		if param:
+			ids = param.split(",")
+
+		jsonData = {"status": "ERROR"}
+		if criteria == "artistId":
+			artistManager = ArtistManager()
+			deezerMediator = DeezerMediator()
+			artists = artistManager.getArtists(ids)
+			data = []
+			for artist in artists:
+				tracks = deezerMediator.getTracks(artist.toDict())
+				tracks = self.manager.addTracks([{"id": t["id"], "name": t["title"]} for t in tracks])
+				artistManager.addTracks(artist, tracks)
+				data.append({"artist": artist.name, "tracks": [t.toDict() for t in tracks]})
+			jsonData = {"status": "OK", "data": data}
+		elif criteria == "id":
+			tracks = [t.toDict() for t in self.manager.getTracks(ids)]
+			status = "OK" if len(artists) > 0 else "ERROR"
+			jsonData = {"status": status, "data": tracks}
 		return self.returnJson(jsonData)
 
-	def post(self, param):
+	def post(self, criteria, param):
 		#param = urllib.unquote(urllib.unquote(param))
 		retData = {}
 		try:
@@ -152,22 +174,17 @@ class TopArtistsHandler(ApiRequestHandler):
 	def get(self):
 		user = self.current_user
 		if user:
-			allArtists = {}
-			for friend in user.friends:
-				for artist in friend.preferedArtists:
-					try:
-						allArtists[artist] += 1
-					except KeyError:
-						allArtists[artist] = 0
-
-			artistValues = allArtists.items()
-			artistValues.sort()
-			topArtists = {}
-			for key, value in artistValues[:5]:
-				topArtists['artist']= key
-				topArtists['friends'] = value
-
-			jsonData = {"status": "OK", "data": topArtists}
+			topArtists = facebookMediator.getTopFriendsMusic(5, self.request.cookies)
+			artistManager = ArtistManager()
+			userManager = UserManager()
+			deezerMediator = DeezerMediator()
+			artists = []
+			for artist in topArtists:
+				artist = deezerMediator.getArtist(artist["artist"])
+				artists.append({"id": artist["id"], "name": artist["name"]})
+			artists = artistManager.addArtists(artists)
+			user = userManager.addArtists(user, artists)
+			jsonData = {"status": "OK", "data": user.toDict()["topArtists"]}
 			return self.returnJson(jsonData)
 		else:
 			return self.returnJson({"status": "ERROR"})
@@ -181,11 +198,11 @@ class FacebookHandler(ApiRequestHandler):
 #		friendsJson = self.graph.get_connections("me", "friends")
 #		music = self.graph.get_connections(friend["id"], "music")
 #		requests[currentRequest].append({"method": "GET", "relative_url": friend["id"]+"/music"})
-		deezerMediator = DeezerAPI()
+		deezerMediator = DeezerMediator()
 		topArtists = facebookMediator.getTopFriendsMusic(5, self.request.cookies)
 		for artist in topArtists:
 			a = deezerMediator.getArtist(artist["artist"])
-			allTracks = deezerMediator.getSongs(a)
+			allTracks = deezerMediator.getTracks(a)
 			tracks = allTracks[:min(5, len(allTracks))]
 			artist["tracks"] = tracks
 
@@ -215,7 +232,7 @@ app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/user(?:/([^/]+)?)?', UserHandler),
 								('/artist(?:/([^/]+)?)?', ArtistHandler),
-								('/track(?:/([^/]+)?)?', TrackHandler),
+								('/track/([^/]+)(?:/([^/]+)?)?', TrackHandler),
 								('/topArtists', TopArtistsHandler),
 								('/facebook', FacebookHandler),
 								('/deezerTracks(?:/([^/]+)?)?', DeezerTrackHandler),

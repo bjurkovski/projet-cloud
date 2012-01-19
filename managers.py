@@ -29,40 +29,33 @@ class UserManager:
 			users.append(user)
 			
 		return users
+
+	def addArtists(self, user, artists):
+		if user:
+			for artist in artists:
+				user.addPreferedArtist(artist)
+			user.put()
+			return user
+		else:
+			return None
 	
 	def getUsers(self, ids=None):
-		data = []
-		users = User.all()
-
-		if ids:
-			users = users.filter("facebookId IN ", ids)
-	
-		for u in users:
-			lastUpdated = datetime.datetime.now() - u.updated
-			shouldUpdate = 1 if lastUpdated.days > 1 else 0
-			dataUser = {"id": u.facebookId, "name": u.name, "last_updated" : str(lastUpdated), 
-			"should_update" : shouldUpdate, "prefered_artists": [Artist.get(a).deezerId for a in u.prefered_artists]}
-			data.append(dataUser)
-		return data
+		users = User.all().filter("facebookId IN ", ids) if ids else User.all()
+		return users
 
 class ArtistManager:
 	def getArtists(self, ids=None):
-		data = []
-		artists = Artist.all()
+		artists = Artist.all().filter("deezerId IN ", ids) if ids else Artist.all()
+		return artists
 
-		if ids:
-			artists = artists.filter("deezerId IN ", ids)
-
-		for a in artists:
-			aTracks = []
-			for trackKey in a.tracks:
-				t = Track.get(trackKey)
-				track = {"id": t.deezerId, "name": t.name}
-				aTracks.append(track)
-			dataArtist = {"id": a.deezerId, "name": a.name, "tracks": aTracks}
-
-			data.append(dataArtist)
-		return data
+	def addTracks(self, artist, tracks):
+		if artist:
+			for track in tracks:
+				artist.addTrack(track)
+			artist.put()
+			return artist
+		else:
+			return None
 		
 	def addArtists(self, data):
 		artists = []

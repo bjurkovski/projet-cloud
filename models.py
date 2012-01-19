@@ -1,4 +1,5 @@
 from google.appengine.ext import db
+import datetime
 
 # * Type Quick Reference: 
 # db.DateTimeProperty(auto_now_add=True)
@@ -19,6 +20,18 @@ class User(db.Model):
 			self.prefered_artists.append(artist.key())
 			artist.likedBy.append(self)
 
+	def toDict(self):
+		lastUpdated = datetime.datetime.now() - self.updated
+		needsUpdate = True if (lastUpdated.days > 1) or (len(self.prefered_artists) == 0) else False
+		topArtists = [a.toDict() for a in Artist.get(self.prefered_artists)]
+		data = {
+			"id": self.facebookId,
+			"name": self.name,
+			"needsUpdate": needsUpdate,
+			"topArtists": topArtists
+		}
+		return data
+
 	def __str__(self):
 		return self.name
 
@@ -37,6 +50,13 @@ class Artist(db.Model):
 			self.tracks.append(track.key())
 			track.artist = self
 
+	def toDict(self):
+		data = {
+			"id": self.deezerId,
+			"name": self.name
+		}
+		return data
+
 class Track(db.Model):
 	deezerId = db.StringProperty()
 	name = db.StringProperty()
@@ -45,3 +65,10 @@ class Track(db.Model):
 	def create(self, sid, name):
 		self.deezerId = sid
 		self.name = name
+
+	def toDict(self):
+		data = {
+			"id": self.deezerId,
+			"name": self.name
+		}
+		return data
