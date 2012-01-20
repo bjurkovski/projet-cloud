@@ -8,6 +8,11 @@ window.fbAsyncInit = function() {
 	});
 
 	main();
+
+	FB.Event.subscribe("auth.authResponseChange", function(response) {
+         // Reload the same page
+         window.location.reload();
+	});
 };
 
 // Load the SDK Asynchronously
@@ -77,4 +82,5 @@ function showTracks(artistId) {
 		}
 	});
 }
+
 
