@@ -65,7 +65,9 @@ function showTopArtists(artists) {
 	document.getElementById('artists').innerHTML = "<h1>Top Artists</h1>";
 	for(var i=0; i<artists.length; i++) {
 		var artistBox = "<div class='box'><h1>" + artists[i].name + "</h1>";
-		artistBox += "<div id='tracks-" + artists[i].id + "'>" + LOADING_IMG + "Loading...</div></div>";
+		artistBox += "<span class='column watermark'>" + (i+1) + "</span>";
+		artistBox += "<span class='column content'><span id='tracks-" + artists[i].id + "'>" + LOADING_IMG + " Loading...</span></span>";
+		artistBox += "</div>";
 		document.getElementById('artists').innerHTML += artistBox;
 		showTracks(artists[i].id);
 	}
@@ -89,7 +91,7 @@ function showTracks(artistId) {
 	});
 }
 
-function after_login_button(){
+function after_login_button() {
     FB.getLoginStatus(function(response) {
         if (response.status=="connected") {
             window.location.reload();
