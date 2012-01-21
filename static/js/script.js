@@ -23,6 +23,9 @@ window.fbAsyncInit = function() {
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
 
+var LOADING_GIF = "/static/img/loading.gif";
+var LOADING_IMG = "<img src='" + LOADING_GIF + "' style='vertical-align: center;' alt='Loading...'/>";
+
 function main() {
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
@@ -37,6 +40,9 @@ function main() {
 						document.getElementById('face').innerHTML += "<br/>[Debug: ";
 						if(user.needsUpdate) {
 							document.getElementById('face').innerHTML += " user needs to be updated]<br/>";
+							document.getElementById('face').innerHTML += "<div id='artists'>"
+												+ LOADING_IMG + " Loading..."
+												+ "</div>";
 							$.ajax({url: "/topArtists",
 									type: 'GET',
 									dataType: 'json',
@@ -47,6 +53,9 @@ function main() {
 						}
 						else {
 							document.getElementById('face').innerHTML += " user doesn't needs to be updated]<br/>";
+							document.getElementById('face').innerHTML += "<div id='artists'>"
+												+ LOADING_IMG + " Loading..."
+												+ "</div>";
 							showTopArtists(user.topArtists);
 						}
 					}
@@ -57,10 +66,11 @@ function main() {
 }
 
 function showTopArtists(artists) {
-	document.getElementById('face').innerHTML += "<br/>Top Artists<br/>";
+	document.getElementById('artists').innerHTML = "<h1>Top Artists</h1>";
 	for(var i=0; i<artists.length; i++) {
-		document.getElementById('face').innerHTML += artists[i].name + "<br/>";
-		document.getElementById('face').innerHTML += "<div id='tracks-" + artists[i].id + "'>Loading...</div><br/>";
+		var artistBox = "<div class='box'><h1>" + artists[i].name + "</h1>";
+		artistBox += "<div id='tracks-" + artists[i].id + "'>" + LOADING_IMG + "Loading...</div></div>";
+		document.getElementById('artists').innerHTML += artistBox;
 		showTracks(artists[i].id);
 	}
 }
@@ -72,13 +82,13 @@ function showTracks(artistId) {
 		success: function(json) {
 			var toPrint = "";
 			for(var i=0; i<json.data.length; i++) {
-				for(var j=0; j<json.data[i].tracks.length; j++) {
-					if(j>0) toPrint += ", ";
-					toPrint += json.data[i].tracks[j].name;
+				var numTracks = json.data[i].tracks.length;
+				if(numTracks > 5) numTracks = 5; 
+				for(var j=0; j<numTracks; j++) {
+					toPrint += "<li>" + json.data[i].tracks[j].name + "</li>";
 				}
-				toPrint += "<br/>";
 			}
-			document.getElementById('tracks-'+artistId).innerHTML = toPrint;
+			document.getElementById('tracks-'+artistId).innerHTML = "<ul>" + toPrint + "</ul>";
 		}
 	});
 }
