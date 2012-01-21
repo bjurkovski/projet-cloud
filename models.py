@@ -41,6 +41,8 @@ class Artist(db.Model):
 	tracks = db.ListProperty(db.Key)
 	likedBy = db.ListProperty(db.Key)
 	updated = db.DateTimeProperty(auto_now=True)
+	deezerUrl = db.TextProperty()
+	pictureUrl = db.TextProperty()
 
 	def create(self, aid, name):
 		self.deezerId = aid
@@ -55,6 +57,8 @@ class Artist(db.Model):
 		data = {
 			"id": self.deezerId,
 			"name": self.name,
+			"deezerUrl": self.deezerUrl,
+			"pictureUrl": self.pictureUrl,
 			"needsUpdate": self.needsUpdate()
 		}
 		return data
@@ -67,6 +71,9 @@ class Track(db.Model):
 	deezerId = db.StringProperty()
 	name = db.StringProperty()
 	artist = db.ReferenceProperty(Artist)
+	deezerUrl = db.TextProperty()
+	deezerRank =db.IntegerProperty()
+	previewUrl = db.TextProperty()
 
 	def create(self, sid, name):
 		self.deezerId = sid
@@ -75,6 +82,9 @@ class Track(db.Model):
 	def toDict(self):
 		data = {
 			"id": self.deezerId,
-			"name": self.name
+			"name": self.name,
+			"deezerUrl": self.deezerUrl,
+			"deezerRank": self.deezerRank,
+			"previewUrl": self.previewUrl
 		}
 		return data

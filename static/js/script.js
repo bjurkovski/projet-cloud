@@ -19,8 +19,10 @@ window.fbAsyncInit = function() {
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
 
-var LOADING_GIF = "/static/img/loading.gif";
-var LOADING_IMG = "<img src='" + LOADING_GIF + "' style='vertical-align: center;' alt='Loading...'/>";
+var LOADING_ICON = "/static/img/loading.gif";
+var MUSIC_ICON = "/static/img/music.png";
+var LOADING_IMG = "<img src='" + LOADING_ICON + "' style='vertical-align: middle;' alt='Loading...'/>";
+var MUSIC_IMG = "<img src='" + MUSIC_ICON + "' style='vertical-align: middle;' width='24px' alt='Listen'/>";
 
 function main() {
 	FB.getLoginStatus(function(response) {
@@ -62,7 +64,7 @@ function main() {
 }
 
 function showTopArtists(artists) {
-	document.getElementById('artists').innerHTML = "<h1>Top Artists</h1>";
+	document.getElementById('artists').innerHTML = "<h2>Your friend's top artists are...</h2>";
 	for(var i=0; i<artists.length; i++) {
 		var artistBox = "<div class='box'><h1>" + artists[i].name + "</h1>";
 		artistBox += "<span class='column watermark'>" + (i+1) + "</span>";
@@ -83,7 +85,8 @@ function showTracks(artistId) {
 				var numTracks = json.data[i].tracks.length;
 				if(numTracks > 5) numTracks = 5; 
 				for(var j=0; j<numTracks; j++) {
-					toPrint += "<li>" + json.data[i].tracks[j].name + "</li>";
+					var track = json.data[i].tracks[j]
+					toPrint += "<li>" + track.name + " <a href='" + track.deezerUrl + "' target='_blank'>" + MUSIC_IMG + "</a></li>";
 				}
 			}
 			document.getElementById('tracks-'+artistId).innerHTML = "<ul>" + toPrint + "</ul>";

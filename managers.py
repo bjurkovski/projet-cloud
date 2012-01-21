@@ -74,20 +74,23 @@ class ArtistManager:
 			except KeyError:
 				pass
 
+			try: artist.deezerUrl = a['deezerUrl']
+			except KeyError: pass
+
+			try: artist.pictureUrl = a['pictureUrl']
+			except KeyError: pass
+
 			artists.append(artist)
 			artist.put()
 
 		return artists
 
 class TrackManager:
-	def getTracks(self):
+	def getTracks(self, ids=None):
 		data = []
 		tracks = Track.all()
 		for t in tracks:
-			dataTrack = {"id": t.deezerId, "name": t.name}
-			if t.artist:
-				dataTrack["artistId"] = t.artist.id
-			data.append(dataTrack)
+			data.append(t)
 		return data
 
 	def addTracks(self, data):
@@ -98,6 +101,15 @@ class TrackManager:
 				track = Track()
 			track.create(t['id'], t['name'])
 			tracks.append(track)
+
+			try: track.deezerUrl = t['deezerUrl']
+			except KeyError: pass
+
+			try: track.deezerRank = t['deezerRank']
+			except KeyError: pass
+
+			try: track.previewUrl = t['previewUrl']
+			except KeyError: pass
 
 		for t in tracks:
 			t.put()

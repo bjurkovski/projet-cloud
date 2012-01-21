@@ -141,9 +141,22 @@ class TrackHandler(ApiRequestHandler):
 			artists = artistManager.getArtists(ids)
 			data = []
 			for artist in artists:
-				if artist.needsUpdate() :
+				if artist.needsUpdate():
 					tracks = deezerMediator.getTracks(artist.toDict())
-					tracks = self.manager.addTracks([{"id": t["id"], "name": t["title"]} for t in tracks])
+					tracksDict = []
+					for t in tracks:
+						tDict =  {
+							"id": t["id"],
+							"name": t["title"],
+							"deezerUrl": t["link"]
+						}
+						try: tDict["deezerRank"] = t["rank"]
+						except KeyError: pass
+						try: tDict["previewUrl"] = t["preview"]
+						except KeyError: pass
+						tracksDict.append(tDict)
+						
+					tracks = self.manager.addTracks(tracksDict)
 					artistManager.addTracks(artist, tracks)
 				else:
 					tracks = Track.get(artist.tracks)
@@ -151,7 +164,7 @@ class TrackHandler(ApiRequestHandler):
 			jsonData = {"status": "OK", "data": data}
 		elif criteria == "id":
 			tracks = [t.toDict() for t in self.manager.getTracks(ids)]
-			status = "OK" if len(artists) > 0 else "ERROR"
+			status = "OK" if len(tracks) > 0 else "ERROR"
 			jsonData = {"status": status, "data": tracks}
 		return self.returnJson(jsonData)
 
@@ -184,7 +197,12 @@ class TopArtistsHandler(ApiRequestHandler):
 			artists = []
 			for artist in topArtists:
 				artist = deezerMediator.getArtist(artist["artist"])
-				artists.append({"id": artist["id"], "name": artist["name"]})
+				artists.append({
+					"id": artist["id"],
+					"name": artist["name"],
+					"deezerUrl": artist["link"],
+					"pictureUrl": artist["picture"]
+				})
 			artists = artistManager.addArtists(artists)
 			user = userManager.addArtists(user, artists)
 			jsonData = {"status": "OK", "data": user.toDict()["topArtists"]}

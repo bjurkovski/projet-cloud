@@ -31,7 +31,7 @@ body {
 	float: left;
 	margin-right: 10px;
 	margin-bottom: 10px;
-	width: 310px;
+	width: 280px;
 	padding: 10px;
 	background-color: #EEE;
     -moz-box-shadow: 0 2px 5px -2px #888;
@@ -41,17 +41,16 @@ body {
 
 .box .column {
 	float: left;
-	margin-right: 10px;
 }
 
 .box .watermark {
 	font-size: 84px;
 	color: #AAA;
-	width: 40px;
+	width: 45px;
 }
 
 .box .content {
-	width: 250px;
+	width: 235px;
 }
 
 .box h1 {
