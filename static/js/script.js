@@ -59,6 +59,12 @@ function main() {
 function showTopArtists(artists) {
 	document.getElementById('face').innerHTML += "<br/>Top Artists<br/>";
 	for(var i=0; i<artists.length; i++) {
+		document.getElementById('face').innerHTML += "<br/>[Debug: ";
+		if(artists[i].needsUpdate)
+			document.getElementById('face').innerHTML += artists[i].name + " Needs to be updated]<br/>";
+		else
+			document.getElementById('face').innerHTML += artists[i].name + " Information in db]<br/>";
+		
 		document.getElementById('face').innerHTML += artists[i].name + "<br/>";
 		document.getElementById('face').innerHTML += "<div id='tracks-" + artists[i].id + "'>Loading...</div><br/>";
 		showTracks(artists[i].id);

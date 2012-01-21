@@ -40,6 +40,7 @@ class Artist(db.Model):
 	name = db.StringProperty()
 	tracks = db.ListProperty(db.Key)
 	likedBy = db.ListProperty(db.Key)
+	updated = db.DateTimeProperty(auto_now=True)
 
 	def create(self, aid, name):
 		self.deezerId = aid
@@ -53,9 +54,14 @@ class Artist(db.Model):
 	def toDict(self):
 		data = {
 			"id": self.deezerId,
-			"name": self.name
+			"name": self.name,
+			"needsUpdate": self.needsUpdate()
 		}
 		return data
+		
+	def needsUpdate(self):
+		lastUpdated = datetime.datetime.now() - self.updated
+		return True if (lastUpdated.days > 1) or (len(self.tracks) == 0) else False 
 
 class Track(db.Model):
 	deezerId = db.StringProperty()

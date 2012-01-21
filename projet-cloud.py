@@ -141,9 +141,12 @@ class TrackHandler(ApiRequestHandler):
 			artists = artistManager.getArtists(ids)
 			data = []
 			for artist in artists:
-				tracks = deezerMediator.getTracks(artist.toDict())
-				tracks = self.manager.addTracks([{"id": t["id"], "name": t["title"]} for t in tracks])
-				artistManager.addTracks(artist, tracks)
+				if artist.needsUpdate() :
+					tracks = deezerMediator.getTracks(artist.toDict())
+					tracks = self.manager.addTracks([{"id": t["id"], "name": t["title"]} for t in tracks])
+					artistManager.addTracks(artist, tracks)
+				else:
+					tracks = Track.get(artist.tracks)
 				data.append({"artist": artist.name, "tracks": [t.toDict() for t in tracks]})
 			jsonData = {"status": "OK", "data": data}
 		elif criteria == "id":
