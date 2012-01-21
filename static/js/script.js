@@ -1,6 +1,7 @@
 window.fbAsyncInit = function() {
 	FB.init({
 		appId      : '173535979414436', // App ID
+		channelUrl : 'channel.html',
 		status     : true, // check login status
 		cookie     : true, // enable cookies to allow the server to access the session
 		xfbml      : true,  // parse XFBML
@@ -8,11 +9,6 @@ window.fbAsyncInit = function() {
 	});
 
 	main();
-
-	FB.Event.subscribe("auth.authResponseChange", function(response) {
-         // Reload the same page
-         window.location.reload();
-	});
 };
 
 // Load the SDK Asynchronously
@@ -22,6 +18,9 @@ window.fbAsyncInit = function() {
 	js.src = "//connect.facebook.net/en_US/all.js";
 	d.getElementsByTagName('head')[0].appendChild(js);
 }(document));
+
+var LOADING_GIF = "/static/img/loading.gif";
+var LOADING_IMG = "<img src='" + LOADING_GIF + "' style='vertical-align: center;' alt='Loading...'/>";
 
 function main() {
 	FB.getLoginStatus(function(response) {
@@ -37,6 +36,9 @@ function main() {
 						document.getElementById('face').innerHTML += "<br/>[Debug: ";
 						if(user.needsUpdate) {
 							document.getElementById('face').innerHTML += " user needs to be updated]<br/>";
+							document.getElementById('face').innerHTML += "<div id='artists'>"
+												+ LOADING_IMG + " Loading..."
+												+ "</div>";
 							$.ajax({url: "/topArtists",
 									type: 'GET',
 									dataType: 'json',
@@ -47,6 +49,9 @@ function main() {
 						}
 						else {
 							document.getElementById('face').innerHTML += " user doesn't needs to be updated]<br/>";
+							document.getElementById('face').innerHTML += "<div id='artists'>"
+												+ LOADING_IMG + " Loading..."
+												+ "</div>";
 							showTopArtists(user.topArtists);
 						}
 					}
@@ -57,16 +62,13 @@ function main() {
 }
 
 function showTopArtists(artists) {
-	document.getElementById('face').innerHTML += "<br/>Top Artists<br/>";
+	document.getElementById('artists').innerHTML = "<h1>Top Artists</h1>";
 	for(var i=0; i<artists.length; i++) {
-		document.getElementById('face').innerHTML += "<br/>[Debug: ";
-		if(artists[i].needsUpdate)
-			document.getElementById('face').innerHTML += artists[i].name + " Needs to be updated]<br/>";
-		else
-			document.getElementById('face').innerHTML += artists[i].name + " Information in db]<br/>";
-		
-		document.getElementById('face').innerHTML += artists[i].name + "<br/>";
-		document.getElementById('face').innerHTML += "<div id='tracks-" + artists[i].id + "'>Loading...</div><br/>";
+		var artistBox = "<div class='box'><h1>" + artists[i].name + "</h1>";
+		artistBox += "<span class='column watermark'>" + (i+1) + "</span>";
+		artistBox += "<span class='column content'><span id='tracks-" + artists[i].id + "'>" + LOADING_IMG + " Loading...</span></span>";
+		artistBox += "</div>";
+		document.getElementById('artists').innerHTML += artistBox;
 		showTracks(artists[i].id);
 	}
 }
@@ -78,15 +80,25 @@ function showTracks(artistId) {
 		success: function(json) {
 			var toPrint = "";
 			for(var i=0; i<json.data.length; i++) {
-				for(var j=0; j<json.data[i].tracks.length; j++) {
-					if(j>0) toPrint += ", ";
-					toPrint += json.data[i].tracks[j].name;
+				var numTracks = json.data[i].tracks.length;
+				if(numTracks > 5) numTracks = 5; 
+				for(var j=0; j<numTracks; j++) {
+					toPrint += "<li>" + json.data[i].tracks[j].name + "</li>";
 				}
-				toPrint += "<br/>";
 			}
-			document.getElementById('tracks-'+artistId).innerHTML = toPrint;
+			document.getElementById('tracks-'+artistId).innerHTML = "<ul>" + toPrint + "</ul>";
 		}
 	});
+}
+
+function after_login_button() {
+    FB.getLoginStatus(function(response) {
+        if (response.status=="connected") {
+            window.location.reload();
+        }
+		else
+			window.location.reload();
+    }, true);
 }
 
 
