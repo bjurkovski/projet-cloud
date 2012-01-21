@@ -1,6 +1,7 @@
 window.fbAsyncInit = function() {
 	FB.init({
 		appId      : '173535979414436', // App ID
+		channelUrl : 'channel.html',
 		status     : true, // check login status
 		cookie     : true, // enable cookies to allow the server to access the session
 		xfbml      : true,  // parse XFBML
@@ -8,11 +9,6 @@ window.fbAsyncInit = function() {
 	});
 
 	main();
-
-	FB.Event.subscribe("auth.authResponseChange", function(response) {
-         // Reload the same page
-         window.location.reload();
-	});
 };
 
 // Load the SDK Asynchronously
@@ -91,6 +87,16 @@ function showTracks(artistId) {
 			document.getElementById('tracks-'+artistId).innerHTML = "<ul>" + toPrint + "</ul>";
 		}
 	});
+}
+
+function after_login_button(){
+    FB.getLoginStatus(function(response) {
+        if (response.status=="connected") {
+            window.location.reload();
+        }
+		else
+			window.location.reload();
+    }, true);
 }
 
 
