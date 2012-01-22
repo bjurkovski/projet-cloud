@@ -120,10 +120,13 @@ class TrackHandler(BaseHandler):
 		return self.returnJson(jsonData)
 
 class TopArtistsHandler(BaseHandler):
-	def get(self):
+	def get(self, numArtists):
 		user = self.current_user
 		if user:
-			topArtists = facebookMediator.getTopFriendsMusic(5, self.request.cookies)
+			if numArtists: numArtists = int(numArtists)
+			else: numArtists = 5
+
+			topArtists = facebookMediator.getTopFriendsMusic(numArtists, self.request.cookies)
 			artistManager = ArtistManager()
 			userManager = UserManager()
 			deezerMediator = DeezerMediator()
@@ -141,8 +144,8 @@ class TopArtistsHandler(BaseHandler):
 					"pictureUrl": picture
 				})
 			artists = artistManager.addArtists(artists)
-			user = userManager.addArtists(user, artists)
-			jsonData = {"status": "OK", "data": user.toDict()["topArtists"]}
+			user = userManager.addArtists(user, artists).toDict()
+			jsonData = {"status": "OK", "data": user["topArtists"], "lastUpdated": user["lastUpdated"]}
 			return self.returnJson(jsonData)
 		else:
 			return self.returnJson({"status": "ERROR"})
@@ -152,6 +155,6 @@ app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/user(?:/([^/]+)?)?', UserHandler),
 								('/track/([^/]+)(?:/([^/]+)?)?', TrackHandler),
-								('/topArtists', TopArtistsHandler)
+								('/topArtists(?:/([^/]+)?)?', TopArtistsHandler)
 							],
 							debug=True)

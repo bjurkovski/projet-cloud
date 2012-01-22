@@ -28,6 +28,7 @@ class User(db.Model):
 			"id": self.facebookId,
 			"name": self.name,
 			"needsUpdate": needsUpdate,
+			"lastUpdated": str(self.updated),
 			"topArtists": topArtists
 		}
 		return data

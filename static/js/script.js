@@ -30,6 +30,7 @@ function main() {
 	FB.getLoginStatus(function(response) {
 	  if (response.status === 'connected') {
 			var uid = response.authResponse.userID;
+			document.getElementById('loading').innerHTML = LOADING_IMG + " Loading...";
 
 			$.ajax({url: "/user/" + uid,
 				type: 'GET',
@@ -43,24 +44,12 @@ function main() {
 						document.getElementById('face').innerHTML += "needs to be updated]<br/>";
 */
 
-						document.getElementById('face').innerHTML += "<h2>Your friend's top artists are...</h2>";
 						if(user.needsUpdate) {
-							document.getElementById('face').innerHTML += "<div id='artists'>"
-												+ LOADING_IMG + " Loading..."
-												+ "</div><div id='artists'></div>";
-							$.ajax({url: "/topArtists",
-									type: 'GET',
-									dataType: 'json',
-									success: function(artistsJson) {
-										showTopArtists(artistsJson.data);
-									}
-							});
+							getUsersTopArtists();
 						}
 						else {
-							document.getElementById('face').innerHTML += "<div id='loading'>"
-												+ LOADING_IMG + " Loading..."
-												+ "</div><div id='artists'></div>";
 							showTopArtists(user.topArtists);
+							//document.getElementById('lastUpdated').innerHTML = user.lastUpdated;
 						}
 					}
 				}
@@ -69,9 +58,27 @@ function main() {
 	});
 }
 
+function getUsersTopArtists() {
+	document.getElementById('loading').innerHTML = LOADING_IMG + " Loading...";
+	document.getElementById('artists').innerHTML = "";
+	$.ajax({url: "/topArtists/" + document.getElementById('numResults').value,
+			type: 'GET',
+			dataType: 'json',
+			success: function(artistsJson) {
+				if(artistsJson.status == "OK") {
+					showTopArtists(artistsJson.data);
+					//document.getElementById('lastUpdated').innerHTML = artistsJson.lastUpdated;
+				}
+			}
+	});
+}
+
 function showTopArtists(artists) {
 	document.getElementById('artists').innerHTML = "";
-	for(var i=0; i<artists.length; i++) {
+	var numArtists = document.getElementById('numResults').value;
+	if(artists.length < numArtists) numArtists = artists.length;
+
+	for(var i=0; i<numArtists; i++) {
 		var artistBox = "<div class='box'><h1>" + artists[i].name + "</h1>";
 		artistBox += "<span class='column watermark'>" + (i+1) + "</span>";
 		artistBox += "<span class='column content'><span id='tracks-" + artists[i].id + "'>" + LOADING_IMG + " Loading...</span></span>";

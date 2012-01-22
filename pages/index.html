@@ -3,7 +3,9 @@
 {% block content %}
 	{% if user %}
 		Hello <b>{{user}}</b>!
+		<h2>Your friend's top artists are...</h2>
+		Number of results: <input type="text" id="numResults" size="3" value="5"/> <button onclick="getUsersTopArtists();">Update</button>
 	{% endif %}
-	<div id="test"></div>
-	<div id="face"></div>
+	<div id="loading"></div>
+	<div id="artists"></div>
 {% endblock %}
