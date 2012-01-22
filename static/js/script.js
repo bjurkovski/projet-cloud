@@ -47,7 +47,7 @@ function main() {
 						if(user.needsUpdate) {
 							document.getElementById('face').innerHTML += "<div id='artists'>"
 												+ LOADING_IMG + " Loading..."
-												+ "</div>";
+												+ "</div><div id='artists'></div>";
 							$.ajax({url: "/topArtists",
 									type: 'GET',
 									dataType: 'json',
@@ -57,9 +57,9 @@ function main() {
 							});
 						}
 						else {
-							document.getElementById('face').innerHTML += "<div id='artists'>"
+							document.getElementById('face').innerHTML += "<div id='loading'>"
 												+ LOADING_IMG + " Loading..."
-												+ "</div>";
+												+ "</div><div id='artists'></div>";
 							showTopArtists(user.topArtists);
 						}
 					}
@@ -79,6 +79,7 @@ function showTopArtists(artists) {
 		document.getElementById('artists').innerHTML += artistBox;
 		showTracks(artists[i].id);
 	}
+	document.getElementById('loading').innerHTML = "";
 }
 
 function showTracks(artistId) {

@@ -22,6 +22,11 @@ body {
     box-shadow: 0 2px 5px -2px #888;
 }
 
+#topmenu #items {
+	text-align: right;
+	padding: 0 10px 0 10px;
+}
+
 #content {
 	width: 1024px;
 	margin: 0 auto 0 auto;
