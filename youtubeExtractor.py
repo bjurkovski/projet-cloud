@@ -1,7 +1,7 @@
 import gdata.youtube
 import gdata.youtube.service
 
-class YouTubeMediator:
+class YouTubeExtractor:
 	def __init__(self):
 		self.yt_service = gdata.youtube.service.YouTubeService()
 

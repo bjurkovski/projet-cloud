@@ -2,14 +2,14 @@ import facebook
 import yaml
 from django.utils import simplejson as json
 
-class FacebookMediator:
+class FacebookExtractor:
 	FB_APP_ID = ""
 	FB_APP_SECRET = ""
 
 	def __init__(self):
 		data = yaml.load(file("facebook.yaml", "r"))
-		FacebookMediator.FB_APP_ID = str(data["app_id"])
-		FacebookMediator.FB_APP_SECRET = str(data["app_secret"])
+		FacebookExtractor.FB_APP_ID = str(data["app_id"])
+		FacebookExtractor.FB_APP_SECRET = str(data["app_secret"])
 
 	def getGraph(self, cookies=None):
 		cookie = self.getCurrentUserCookie(cookies)
@@ -20,7 +20,7 @@ class FacebookMediator:
 	def getCurrentUserCookie(self, cookies=None):
 		if not cookies:
 			return None
-		return facebook.get_user_from_cookie(cookies, FacebookMediator.FB_APP_ID, FacebookMediator.FB_APP_SECRET)
+		return facebook.get_user_from_cookie(cookies, FacebookExtractor.FB_APP_ID, FacebookExtractor.FB_APP_SECRET)
 
 	def getTopFriendsMusic(self, limit=5, cookies=None):
 		requests = [

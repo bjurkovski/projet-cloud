@@ -3,13 +3,13 @@ from django.utils import simplejson as json
 import urllib
 import string
 
-class DeezerMediator:
+class DeezerExtractor:
 
 	API_URL = 'http://api.deezer.com/'
 	API_VERSION = '2.0'
 
 	def getArtist(self, query):
-		page = urllib.urlopen(DeezerMediator.API_URL + DeezerMediator.API_VERSION + '/search/artist?q=' + query)			
+		page = urllib.urlopen(DeezerExtractor.API_URL + DeezerExtractor.API_VERSION + '/search/artist?q=' + query)			
 		content = json.loads(page.read())
 		
 		query = string.split(string.lower(query))
@@ -33,7 +33,7 @@ class DeezerMediator:
 	def getTracks(self, artist):
 		songs = []
 
-		page = urllib.urlopen(DeezerMediator.API_URL + DeezerMediator.API_VERSION + '/search?q=' + artist['name'])
+		page = urllib.urlopen(DeezerExtractor.API_URL + DeezerExtractor.API_VERSION + '/search?q=' + artist['name'])
 		content = json.loads(page.read())
 		
 		for song in content['data']:

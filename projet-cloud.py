@@ -7,13 +7,13 @@ from django.utils import simplejson as json
 
 from models import *
 from managers import *
-from deezerMediator import *
-from facebookMediator import *
-from youtubeMediator import *
+from deezerExtractor import *
+from facebookExtractor import *
+from youtubeExtractor import *
 
 PAGES_FOLDER = "pages/"
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-facebookMediator = FacebookMediator()
+facebookExtractor = FacebookExtractor()
 
 class BaseHandler(webapp2.RequestHandler):
 	"""Provides access to the active Facebook user in self.current_user
@@ -25,13 +25,13 @@ class BaseHandler(webapp2.RequestHandler):
 	"""
 	@property
 	def graph(self):
-		return facebookMediator.getGraph(self.request.cookies)
+		return facebookExtractor.getGraph(self.request.cookies)
 
 	@property
 	def current_user(self):
 		if not hasattr(self, "_current_user"):
 			self._current_user = None
-			cookie = facebookMediator.getCurrentUserCookie(self.request.cookies)
+			cookie = facebookExtractor.getCurrentUserCookie(self.request.cookies)
 			if cookie:
 				# Store a local instance of the user data so we don't need
 				# a round-trip to Facebook on every request
@@ -85,16 +85,16 @@ class TrackHandler(BaseHandler):
 		if criteria == "artistId":
 			trackManager = TrackManager()
 			artistManager = ArtistManager()
-			deezerMediator = DeezerMediator()
-			youtubeMediator = YouTubeMediator()
+			deezerExtractor = DeezerExtractor()
+			youtubeExtractor = YouTubeExtractor()
 			artists = artistManager.getArtists(ids)
 			data = []
 			for artist in artists:
 				if artist.needsUpdate():
-					tracks = deezerMediator.getTracks(artist.toDict())
+					tracks = deezerExtractor.getTracks(artist.toDict())
 					tracksDict = []
 					for t in tracks:
-						video = youtubeMediator.getVideo(artist.name, t["title"])
+						video = youtubeExtractor.getVideo(artist.name, t["title"])
 						tDict =  {
 							"id": t["id"],
 							"name": t["title"],
@@ -126,13 +126,13 @@ class TopArtistsHandler(BaseHandler):
 			if numArtists: numArtists = int(numArtists)
 			else: numArtists = 5
 
-			topArtists = facebookMediator.getTopFriendsMusic(numArtists, self.request.cookies)
+			topArtists = facebookExtractor.getTopFriendsMusic(numArtists, self.request.cookies)
 			artistManager = ArtistManager()
 			userManager = UserManager()
-			deezerMediator = DeezerMediator()
+			deezerExtractor = DeezerExtractor()
 			artists = []
 			for artist in topArtists:
-				artist = deezerMediator.getArtist(artist["artist"])
+				artist = deezerExtractor.getArtist(artist["artist"])
 				try: link = artist["link"]
 				except KeyError: link = None
 				try: picture = artist["picture"]
