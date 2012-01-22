@@ -3,7 +3,7 @@ import facebook
 import jinja2
 import os
 import urllib
-from django.utils import simplejson as json
+import json
 
 from models import *
 from managers import *

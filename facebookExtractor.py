@@ -1,6 +1,6 @@
 import facebook
 import yaml
-from django.utils import simplejson as json
+import json
 
 class FacebookExtractor:
 	FB_APP_ID = ""

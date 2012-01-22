@@ -1,4 +1,4 @@
-from django.utils import simplejson as json
+import json
 
 import urllib
 import string
