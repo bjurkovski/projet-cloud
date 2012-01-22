@@ -7,13 +7,14 @@ from django.utils import simplejson as json
 
 from models import *
 from managers import *
+from dataMapper import *
 from deezerExtractor import *
 from facebookExtractor import *
 from youtubeExtractor import *
 
 PAGES_FOLDER = "pages/"
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-facebookExtractor = FacebookExtractor()
+dataMapper = DataMapper()
 
 class BaseHandler(webapp2.RequestHandler):
 	"""Provides access to the active Facebook user in self.current_user
@@ -25,13 +26,13 @@ class BaseHandler(webapp2.RequestHandler):
 	"""
 	@property
 	def graph(self):
-		return facebookExtractor.getGraph(self.request.cookies)
+		return dataMapper.facebookExtractor.getGraph(self.request.cookies)
 
 	@property
 	def current_user(self):
 		if not hasattr(self, "_current_user"):
 			self._current_user = None
-			cookie = facebookExtractor.getCurrentUserCookie(self.request.cookies)
+			cookie = dataMapper.facebookExtractor.getCurrentUserCookie(self.request.cookies)
 			if cookie:
 				# Store a local instance of the user data so we don't need
 				# a round-trip to Facebook on every request
@@ -85,28 +86,11 @@ class TrackHandler(BaseHandler):
 		if criteria == "artistId":
 			trackManager = TrackManager()
 			artistManager = ArtistManager()
-			deezerExtractor = DeezerExtractor()
-			youtubeExtractor = YouTubeExtractor()
 			artists = artistManager.getArtists(ids)
 			data = []
 			for artist in artists:
 				if artist.needsUpdate():
-					tracks = deezerExtractor.getTracks(artist.toDict())
-					tracksDict = []
-					for t in tracks:
-						video = youtubeExtractor.getVideo(artist.name, t["title"])
-						tDict =  {
-							"id": t["id"],
-							"name": t["title"],
-							"deezerUrl": t["link"],
-							"videoUrl": video["url"]
-						}
-						try: tDict["deezerRank"] = t["rank"]
-						except KeyError: pass
-						try: tDict["previewUrl"] = t["preview"]
-						except KeyError: pass
-						tracksDict.append(tDict)
-						
+					tracksDict = dataMapper.getTracks(artist.toDict())
 					tracks = trackManager.addTracks(tracksDict)
 					artistManager.addTracks(artist, tracks)
 				else:
@@ -126,24 +110,10 @@ class TopArtistsHandler(BaseHandler):
 			if numArtists: numArtists = int(numArtists)
 			else: numArtists = 5
 
-			topArtists = facebookExtractor.getTopFriendsMusic(numArtists, self.request.cookies)
 			artistManager = ArtistManager()
 			userManager = UserManager()
-			deezerExtractor = DeezerExtractor()
-			artists = []
-			for artist in topArtists:
-				artist = deezerExtractor.getArtist(artist["artist"])
-				try: link = artist["link"]
-				except KeyError: link = None
-				try: picture = artist["picture"]
-				except KeyError: picture = None
-				artists.append({
-					"id": artist["id"],
-					"name": artist["name"],
-					"deezerUrl": link,
-					"pictureUrl": picture
-				})
-			artists = artistManager.addArtists(artists)
+			artistsDict = dataMapper.getFriendsMusic(numArtists, self.request.cookies)
+			artists = artistManager.addArtists(artistsDict)
 			user = userManager.addArtists(user, artists).toDict()
 			jsonData = {"status": "OK", "data": user["topArtists"], "lastUpdated": user["lastUpdated"]}
 			return self.returnJson(jsonData)
