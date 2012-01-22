@@ -111,6 +111,9 @@ class TrackManager:
 			try: track.previewUrl = t['previewUrl']
 			except KeyError: pass
 
+			try: track.videoUrl = t['videoUrl']
+			except KeyError: pass
+
 		for t in tracks:
 			t.put()
 

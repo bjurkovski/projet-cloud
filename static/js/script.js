@@ -21,8 +21,10 @@ window.fbAsyncInit = function() {
 
 var LOADING_ICON = "/static/img/loading.gif";
 var MUSIC_ICON = "/static/img/music.png";
+var YOUTUBE_ICON = "/static/img/youtube.png";
 var LOADING_IMG = "<img src='" + LOADING_ICON + "' style='vertical-align: middle;' alt='Loading...'/>";
 var MUSIC_IMG = "<img src='" + MUSIC_ICON + "' style='vertical-align: middle;' width='24px' alt='Listen'/>";
+var YOUTUBE_IMG = "<img src='" + YOUTUBE_ICON + "' style='vertical-align: middle;' width='24px' alt='Watch video'/>";
 
 function main() {
 	FB.getLoginStatus(function(response) {
@@ -35,9 +37,14 @@ function main() {
 				success: function(json) {
 					if(json.status == "OK") {
 						var user = json.data[0];
-						document.getElementById('face').innerHTML += "<br/>[Debug: ";
+/*
+						document.getElementById('face').innerHTML += "<br/>[Debug: user ";
+						if(!user.needsUpdate) document.getElementById('face').innerHTML += "doesn't ";
+						document.getElementById('face').innerHTML += "needs to be updated]<br/>";
+*/
+
+						document.getElementById('face').innerHTML += "<h2>Your friend's top artists are...</h2>";
 						if(user.needsUpdate) {
-							document.getElementById('face').innerHTML += " user needs to be updated]<br/>";
 							document.getElementById('face').innerHTML += "<div id='artists'>"
 												+ LOADING_IMG + " Loading..."
 												+ "</div>";
@@ -50,7 +57,6 @@ function main() {
 							});
 						}
 						else {
-							document.getElementById('face').innerHTML += " user doesn't needs to be updated]<br/>";
 							document.getElementById('face').innerHTML += "<div id='artists'>"
 												+ LOADING_IMG + " Loading..."
 												+ "</div>";
@@ -64,7 +70,7 @@ function main() {
 }
 
 function showTopArtists(artists) {
-	document.getElementById('artists').innerHTML = "<h2>Your friend's top artists are...</h2>";
+	document.getElementById('artists').innerHTML = "";
 	for(var i=0; i<artists.length; i++) {
 		var artistBox = "<div class='box'><h1>" + artists[i].name + "</h1>";
 		artistBox += "<span class='column watermark'>" + (i+1) + "</span>";
@@ -86,7 +92,12 @@ function showTracks(artistId) {
 				if(numTracks > 5) numTracks = 5; 
 				for(var j=0; j<numTracks; j++) {
 					var track = json.data[i].tracks[j]
-					toPrint += "<li>" + track.name + " <a href='" + track.deezerUrl + "' target='_blank'>" + MUSIC_IMG + "</a></li>";
+					toPrint += "<li>" + track.name + " ";
+					if(track.deezerUrl)
+						toPrint += "<a href='" + track.deezerUrl + "' target='_blank'>" + MUSIC_IMG + "</a> ";
+					if(track.videoUrl)
+						toPrint += "<a href='" + track.videoUrl + "' target='_blank'>" + YOUTUBE_IMG + "</a>";
+					toPrint += "</li>";
 				}
 			}
 			document.getElementById('tracks-'+artistId).innerHTML = "<ul>" + toPrint + "</ul>";

@@ -9,6 +9,7 @@ from models import *
 from managers import *
 from deezerMediator import *
 from facebookMediator import *
+from youtubeMediator import *
 
 PAGES_FOLDER = "pages/"
 jinja = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
@@ -48,6 +49,9 @@ class BaseHandler(webapp2.RequestHandler):
 				self._current_user = user
 		return self._current_user
 
+	def returnJson(self, data):
+		return self.response.out.write(json.dumps(data))
+
 class MainPage(BaseHandler):
 	def get(self):
 		template_values = {
@@ -56,79 +60,22 @@ class MainPage(BaseHandler):
 		template = jinja.get_template(PAGES_FOLDER + 'index.html')
 		self.response.out.write(template.render(template_values))
 
-class ApiRequestHandler(BaseHandler):
-	def __init__(self, request, response, manager):
-		webapp2.RequestHandler.__init__(self, request, response)
-		self.manager = manager
-
+class UserHandler(BaseHandler):
 	def get(self, param):
-		return self.returnJson({"status": "ERROR"})
+		if not self.current_user:
+			return self.returnJson({"status": "ERROR"})
 
-	def post(self, param):
-		return self.returnJson({"status": "ERROR"})
-
-	def returnJson(self, data):
-		return self.response.out.write(json.dumps(data))
-
-class UserHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, UserManager())
-		
-	def get(self, param):
 		ids = None
-		if param:
-			ids = param.split(",")
+		if param: ids = param.split(",")
+		else: ids = [self.current_user.facebookId]			
 
-		users = [u.toDict() for u in self.manager.getUsers(ids)]
+		userManager = UserManager()
+		users = [u.toDict() for u in userManager.getUsers(ids)]
 		status = "OK" if len(users) > 0 else "ERROR"
 		jsonData = {"status": status, "data": users}
 		return self.returnJson(jsonData)
 
-	def post(self, param):
-		jsonStr = self.request.get("json")
-		data = json.loads(jsonStr)
-		if param == "update":
-			return self.returnJson({"status": "OK"})
-		else:
-			retData = {}
-			users = self.manager.addUsers(data["data"])
-			if users:
-				return self.returnJson({"status": "OK"})
-			else:
-				return self.returnJson({"status": "ERROR"})
-			
-class ArtistHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, ArtistManager())
-
-	def get(self, param):
-		ids = None
-		if param:
-			ids = param.split(",")
-
-		artists = [a.toDict() for a in self.manager.getArtists(ids)]
-		status = "OK" if len(artists) > 0 else "ERROR"
-		jsonData = {"status": status, "data": artists}
-		return self.returnJson(jsonData)
-
-	def post(self, param):
-		retData = {}
-		#try:
-		jsonStr = self.request.get("json")
-		data = json.loads(jsonStr)
-
-		artists = self.manager.addArtists(data["data"])
-		if artists:
-			return self.returnJson({"status": "OK"})
-		else:
-			return self.returnJson({"status": "ERROR"})
-		#except:
-		#	return self.returnJson({"status": "ERROR"})
-
-class TrackHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, TrackManager())
-
+class TrackHandler(BaseHandler):
 	def get(self, criteria, param):
 		ids = None
 		if param:
@@ -136,8 +83,10 @@ class TrackHandler(ApiRequestHandler):
 
 		jsonData = {"status": "ERROR"}
 		if criteria == "artistId":
+			trackManager = TrackManager()
 			artistManager = ArtistManager()
 			deezerMediator = DeezerMediator()
+			youtubeMediator = YouTubeMediator()
 			artists = artistManager.getArtists(ids)
 			data = []
 			for artist in artists:
@@ -145,10 +94,12 @@ class TrackHandler(ApiRequestHandler):
 					tracks = deezerMediator.getTracks(artist.toDict())
 					tracksDict = []
 					for t in tracks:
+						video = youtubeMediator.getVideo(artist.name, t["title"])
 						tDict =  {
 							"id": t["id"],
 							"name": t["title"],
-							"deezerUrl": t["link"]
+							"deezerUrl": t["link"],
+							"videoUrl": video["url"]
 						}
 						try: tDict["deezerRank"] = t["rank"]
 						except KeyError: pass
@@ -156,37 +107,19 @@ class TrackHandler(ApiRequestHandler):
 						except KeyError: pass
 						tracksDict.append(tDict)
 						
-					tracks = self.manager.addTracks(tracksDict)
+					tracks = trackManager.addTracks(tracksDict)
 					artistManager.addTracks(artist, tracks)
 				else:
 					tracks = Track.get(artist.tracks)
 				data.append({"artist": artist.name, "tracks": [t.toDict() for t in tracks]})
 			jsonData = {"status": "OK", "data": data}
 		elif criteria == "id":
-			tracks = [t.toDict() for t in self.manager.getTracks(ids)]
+			tracks = [t.toDict() for t in trackManager.getTracks(ids)]
 			status = "OK" if len(tracks) > 0 else "ERROR"
 			jsonData = {"status": status, "data": tracks}
 		return self.returnJson(jsonData)
 
-	def post(self, criteria, param):
-		#param = urllib.unquote(urllib.unquote(param))
-		retData = {}
-		try:
-			jsonStr = self.request.get("json")
-			data = json.loads(jsonStr)
-
-			tracks = self.manager.addTracks(data["data"])
-			if tracks:
-				return self.returnJson({"status": "OK"})
-			else:
-				return self.returnJson({"status": "ERROR"})
-		except:
-			return self.returnJson({"status": "ERROR"})
-
-class TopArtistsHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, None)
-
+class TopArtistsHandler(BaseHandler):
 	def get(self):
 		user = self.current_user
 		if user:
@@ -197,11 +130,15 @@ class TopArtistsHandler(ApiRequestHandler):
 			artists = []
 			for artist in topArtists:
 				artist = deezerMediator.getArtist(artist["artist"])
+				try: link = artist["link"]
+				except KeyError: link = None
+				try: picture = artist["picture"]
+				except KeyError: picture = None
 				artists.append({
 					"id": artist["id"],
 					"name": artist["name"],
-					"deezerUrl": artist["link"],
-					"pictureUrl": artist["picture"]
+					"deezerUrl": link,
+					"pictureUrl": picture
 				})
 			artists = artistManager.addArtists(artists)
 			user = userManager.addArtists(user, artists)
@@ -210,53 +147,11 @@ class TopArtistsHandler(ApiRequestHandler):
 		else:
 			return self.returnJson({"status": "ERROR"})
 
-class FacebookHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, None)
-
-	def get(self):
-#		code examples (might be useful in the future)
-#		friendsJson = self.graph.get_connections("me", "friends")
-#		music = self.graph.get_connections(friend["id"], "music")
-#		requests[currentRequest].append({"method": "GET", "relative_url": friend["id"]+"/music"})
-		deezerMediator = DeezerMediator()
-		topArtists = facebookMediator.getTopFriendsMusic(5, self.request.cookies)
-		for artist in topArtists:
-			a = deezerMediator.getArtist(artist["artist"])
-			allTracks = deezerMediator.getTracks(a)
-			tracks = allTracks[:min(5, len(allTracks))]
-			artist["tracks"] = tracks
-
-		jsonData = {"data": topArtists}
-		return self.returnJson(jsonData)
-
-class DeezerTrackHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, None)
-		
-	def get(self, query):
-		deezerMediator = DeezerMediator()
-		artist = deezerMediator.getArtist(query)
-		jsonData = {"data": deezerMediator.getTracks(artist)}
-		return self.returnJson(jsonData)
-
-class DeezerArtistHandler(ApiRequestHandler):
-	def __init__(self, request, response):
-		ApiRequestHandler.__init__(self, request, response, None)
-	def get(self, query):
-		deezerMediator = DeezerMediator()
-		jsonData = {"data": deezerMediator.getArtist(query)}
-		return self.returnJson(jsonData)
-
 
 app = webapp2.WSGIApplication([
 								('/', MainPage),
 								('/user(?:/([^/]+)?)?', UserHandler),
-								('/artist(?:/([^/]+)?)?', ArtistHandler),
 								('/track/([^/]+)(?:/([^/]+)?)?', TrackHandler),
-								('/topArtists', TopArtistsHandler),
-								('/facebook', FacebookHandler),
-								('/deezerTracks(?:/([^/]+)?)?', DeezerTrackHandler),
-								('/deezerArtist(?:/([^/]+)?)?', DeezerArtistHandler),
+								('/topArtists', TopArtistsHandler)
 							],
 							debug=True)

@@ -74,6 +74,7 @@ class Track(db.Model):
 	deezerUrl = db.TextProperty()
 	deezerRank =db.IntegerProperty()
 	previewUrl = db.TextProperty()
+	videoUrl = db.TextProperty()
 
 	def create(self, sid, name):
 		self.deezerId = sid
@@ -85,6 +86,7 @@ class Track(db.Model):
 			"name": self.name,
 			"deezerUrl": self.deezerUrl,
 			"deezerRank": self.deezerRank,
-			"previewUrl": self.previewUrl
+			"previewUrl": self.previewUrl,
+			"videoUrl": self.videoUrl
 		}
 		return data

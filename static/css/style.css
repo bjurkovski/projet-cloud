@@ -23,15 +23,14 @@ body {
 }
 
 #content {
-	width: 960px;
+	width: 1024px;
 	margin: 0 auto 0 auto;
 }
 
 .box {
 	float: left;
-	margin-right: 10px;
-	margin-bottom: 10px;
-	width: 280px;
+	margin: 5px;
+	width: 310px;
 	padding: 10px;
 	background-color: #EEE;
     -moz-box-shadow: 0 2px 5px -2px #888;
@@ -46,11 +45,11 @@ body {
 .box .watermark {
 	font-size: 84px;
 	color: #AAA;
-	width: 45px;
+	width: 50px;
 }
 
 .box .content {
-	width: 235px;
+	width: 260px;
 }
 
 .box h1 {
