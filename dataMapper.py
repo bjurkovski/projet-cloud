@@ -16,13 +16,13 @@ class DataMapper:
 			tDict =  {
 				"id": t["id"],
 				"name": t["title"],
-				"deezerUrl": t["link"],
-				"videoUrl": video["url"]
+				"deezerUrl": t["link"]
 			}
 			try: tDict["deezerRank"] = t["rank"]
 			except KeyError: pass
 			try: tDict["previewUrl"] = t["preview"]
 			except KeyError: pass
+			if video: tDict["videoUrl"] = video["url"]
 			tracksDict.append(tDict)
 		return tracksDict
 
