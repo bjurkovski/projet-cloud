@@ -4,7 +4,6 @@ import urllib
 import string
 
 class DeezerExtractor:
-
 	API_URL = 'http://api.deezer.com/'
 	API_VERSION = '2.0'
 
@@ -30,7 +29,8 @@ class DeezerExtractor:
 				selected = artist
 		return selected
 		
-	def getTracks(self, artist):
+	def getTracks(self, artist, maxResults=5):
+		if maxResults < 1: maxResults = 1
 		songs = []
 
 		page = urllib.urlopen(DeezerExtractor.API_URL + DeezerExtractor.API_VERSION + '/search?q=' + artist['name'])
@@ -40,4 +40,4 @@ class DeezerExtractor:
 			if song['artist']['id'] == artist['id']:
 				songs.append(song)
 		
-		return songs
+		return songs[:min(len(songs), maxResults)]
